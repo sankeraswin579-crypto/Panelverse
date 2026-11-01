@@ -1,12 +1,12 @@
 {
   "name": "panelverse",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "private": true,
   "description": "PanelVerse shared comics and universe explorer with PostgreSQL accounts",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check public/login.js"
+    "check": "node --check server.js && node --check public/app.js && node --check public/discovery.js && node --check public/login.js"
   },
   "engines": {
     "node": ">=20"

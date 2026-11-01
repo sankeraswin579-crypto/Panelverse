@@ -25,3 +25,25 @@
 
 /* Public live movie and television discovery */
 .live-discovery{margin:28px 0 36px;padding:24px;border:1px solid rgba(160,150,210,.2);border-radius:18px;background:linear-gradient(135deg,rgba(95,76,150,.12),rgba(28,31,48,.35))}.live-discovery-heading h2{margin:8px 0}.live-discovery-heading p{color:var(--muted,#a7a6b5);max-width:720px}.live-search-form{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 12px}.live-search-form input{flex:1 1 280px;min-width:0;padding:13px 15px;border:1px solid rgba(160,150,210,.3);border-radius:10px;background:rgba(10,12,22,.75);color:inherit;font:inherit}.live-search-form button{white-space:nowrap}#tmdb-results:empty{display:none}
+
+
+/* Live comic and superhero discovery */
+.comic-discovery{margin-top:12px}
+.comic-discovery .live-search-form select{min-width:190px;padding:12px 13px;border:1px solid rgba(160,150,210,.3);border-radius:10px;background:#101522;color:#e8eaf2;font:inherit}
+.discovery-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.discovery-card{display:grid;grid-template-columns:116px minmax(0,1fr);min-height:166px;overflow:hidden;border:1px solid #2b3544;border-radius:12px;background:linear-gradient(145deg,#192231,#121923)}
+.discovery-card-art{position:relative;display:flex;align-items:center;justify-content:center;min-height:166px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#55466c 0%,#263347 48%,#141b28 100%)}
+.discovery-card-art>span{position:absolute;left:8px;right:8px;bottom:8px;padding:5px 6px;border-radius:5px;background:#0b1019d9;color:#d8caff;text-align:center;font-size:7px;letter-spacing:.7px}
+.discovery-art-image{width:100%;height:100%;min-height:166px;object-fit:cover}
+.discovery-art-fallback{font:600 45px var(--display);color:#d7c8ff;text-shadow:0 5px 25px #0008}
+.discovery-card-copy{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:13px}
+.discovery-source{color:#ac9ce0;font-size:8px;letter-spacing:.65px;text-transform:uppercase}
+.discovery-card-copy h3{margin:6px 0 7px;color:#f0f1f7;font:600 14px var(--display);line-height:1.3}
+.discovery-card-copy p{margin:0;color:#aab5c4;font-size:9px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.discovery-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:12px}
+.discovery-links a{color:#c7b8ff;font-size:8px;text-decoration:none}
+.discovery-links a:hover{text-decoration:underline}
+.discovery-empty{grid-column:1/-1;padding:24px;border:1px dashed #3a4557;border-radius:10px;color:#aab5c4;font-size:11px;text-align:center}
+.discovery-attribution{margin:14px 0 0;color:#8491a2;font-size:8px;line-height:1.6}
+@media(max-width:900px){.discovery-results{grid-template-columns:1fr}}
+@media(max-width:520px){.discovery-card{grid-template-columns:88px minmax(0,1fr)}.discovery-card-art,.discovery-art-image{min-height:158px}.comic-discovery .live-search-form select{width:100%}.discovery-card-copy{padding:10px}.discovery-card-copy h3{font-size:12px}}

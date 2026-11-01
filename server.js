@@ -19,7 +19,7 @@ const pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorize
 const SECURITY = {
   'X-Content-Type-Options':'nosniff', 'X-Frame-Options':'DENY', 'Referrer-Policy':'strict-origin-when-cross-origin',
   'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://upload.wikimedia.org; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 };
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.webmanifest':'application/manifest+json; charset=utf-8', '.svg':'image/svg+xml' };
 const send = (res, status, body, extra={}) => { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', ...SECURITY, 'Cache-Control':'no-store', ...extra }); res.end(JSON.stringify(body)); };
@@ -58,6 +58,178 @@ async function searchTMDB(query) {
   const payload=await response.json(); const results=(payload.results||[]).filter(x=>['movie','tv','person'].includes(x.media_type)).slice(0,15).map(x=>({id:x.id,mediaType:x.media_type,title:x.title||x.name||'Untitled',year:(x.release_date||x.first_air_date||'').slice(0,4),overview:x.overview||x.known_for_department||'',posterUrl:x.poster_path?`https://image.tmdb.org/t/p/w500${x.poster_path}`:null,backdropUrl:x.backdrop_path?`https://image.tmdb.org/t/p/w780${x.backdrop_path}`:null,tmdbUrl:`https://www.themoviedb.org/${x.media_type}/${x.id}`}));
   const value={configured:true,results}; tmdbCache.set(key,{value,expires:Date.now()+10*60*1000}); return value;
 }
+// Public, source-linked discovery for comic books and superhero characters.
+// Requests use Wikimedia's public APIs with an identifying User-Agent, bounded concurrency,
+// short-lived caching, and conservative request limits. No API key is required.
+const comicDiscoveryCache = new Map();
+const comicDiscoveryInFlight = new Map();
+const comicDiscoveryAttempts = new Map();
+const comicDiscoveryGlobal = { started: Date.now(), count: 0 };
+const WIKIMEDIA_AGENT = 'PanelVerse/2.1 (+https://panelverse-dhu0.onrender.com)';
+const CHARACTER_CUES = /\b(superhero|supervillain|superheroine|fictional character|comic book character|comic-book character|fictional superhero|fictional superhuman)\b/i;
+const COMIC_CUES = /\b(comic|comics|comic book|comic books|graphic novel|manga|comic strip|comic series|comic-book series|story arc|trade paperback|issue of a comic)\b/i;
+const COMIC_WORK_CUES = /\b(?:comic book series|comic-book series|comic series|comic book miniseries|comic-book miniseries|graphic novel|trade paperback|comic strip|story arc|comic book issue|manga series)\b/i;
+// Search providers return broad matches. Exclude adaptation/media articles before
+// classifying them so a "superhero film" cannot be presented as a character.
+const NON_COMIC_TITLE_CUES = /\b(?:film|movie|television|tv series|animated series|in film|in television|video game|soundtrack|episode|season|(?<!graphic )novel|radio series|web series|disambiguation)\b/i;
+const NON_COMIC_LEAD_CUES = /\b(?:(?:(?:is|was|are|were)\s+(?:a|an)\s+)?(?:(?:[\w-]+)\s+){0,5})(?:film|movie|television series|tv series|animated series|video game|(?<!graphic )novel|soundtrack|radio series|web series)\b/i;
+const DISAMBIGUATION_CUES = /\b(?:may refer to|disambiguation|can refer to)\b/i;
+function discoveryKind(title, summary) {
+  const pageTitle = String(title || '');
+  const description = String(summary || '');
+  const lead = description.split(/(?<=[.!?])\s+/)[0] || description.slice(0, 260);
+  if (NON_COMIC_TITLE_CUES.test(pageTitle) || DISAMBIGUATION_CUES.test(lead) || DISAMBIGUATION_CUES.test(pageTitle)) return null;
+  if (NON_COMIC_LEAD_CUES.test(lead)) return null;
+  const value = `${pageTitle} ${description}`;
+  if (COMIC_WORK_CUES.test(value)) return 'comic';
+  if (CHARACTER_CUES.test(value)) return 'character';
+  if (COMIC_CUES.test(value)) return 'comic';
+  return null;
+}
+function discoveryText(value, max = 720) {
+  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&#39;|&apos;/gi, "'").replace(/&quot;/gi, '"').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+function discoveryRateLimited(req) {
+  const now = Date.now();
+  const ip = req.socket.remoteAddress || 'unknown';
+  let record = comicDiscoveryAttempts.get(ip);
+  if (!record || now - record.started > 10 * 60 * 1000) record = { started: now, count: 0 };
+  record.count += 1;
+  comicDiscoveryAttempts.set(ip, record);
+  if (comicDiscoveryAttempts.size > 4000) {
+    for (const [key, value] of comicDiscoveryAttempts) if (now - value.started > 10 * 60 * 1000) comicDiscoveryAttempts.delete(key);
+  }
+  if (now - comicDiscoveryGlobal.started > 15 * 60 * 1000) {
+    comicDiscoveryGlobal.started = now;
+    comicDiscoveryGlobal.count = 0;
+  }
+  comicDiscoveryGlobal.count += 1;
+  return record.count > 18 || comicDiscoveryGlobal.count > 80;
+}
+async function wikimediaJSON(endpoint) {
+  const response = await fetch(endpoint, {
+    headers: { 'User-Agent': WIKIMEDIA_AGENT, Accept: 'application/json' },
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!response.ok) {
+    const error = new Error(response.status === 429 ? 'Wikimedia is temporarily rate limiting searches.' : `Wikimedia search returned ${response.status}.`);
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+async function searchWikipediaComics(query, kind) {
+  const url = new URL('https://en.wikipedia.org/w/api.php');
+  for (const [key, value] of Object.entries({
+    action: 'query', generator: 'search', gsrsearch: query, gsrnamespace: '0', gsrlimit: '12',
+    prop: 'extracts|pageimages|info', exintro: '1', explaintext: '1', exchars: '680',
+    piprop: 'thumbnail', pithumbsize: '420', inprop: 'url', format: 'json', formatversion: '2'
+  })) url.searchParams.set(key, value);
+  const payload = await wikimediaJSON(url);
+  const pages = Array.isArray(payload.query?.pages) ? payload.query.pages : Object.values(payload.query?.pages || {});
+  return pages.map(page => {
+    const summary = discoveryText(page.extract);
+    const classified = discoveryKind(page.title, summary);
+    if (!classified || (kind !== 'all' && classified !== kind)) return null;
+    const sourceUrl = typeof page.fullurl === 'string' && page.fullurl.startsWith('https://en.wikipedia.org/')
+      ? page.fullurl : `https://en.wikipedia.org/?curid=${encodeURIComponent(page.pageid)}`;
+    const thumbnail = typeof page.thumbnail?.source === 'string' && page.thumbnail.source.startsWith('https://upload.wikimedia.org/')
+      ? page.thumbnail.source : null;
+    return {
+      id: `wikipedia-${page.pageid}`, type: classified, title: discoveryText(page.title, 180),
+      summary: summary || 'Open the Wikipedia article for a source overview.', imageUrl: thumbnail,
+      source: 'Wikipedia', sourceLinks: [{ label: 'Wikipedia', url: sourceUrl }]
+    };
+  }).filter(Boolean);
+}
+async function searchWikidataComics(query, kind) {
+  const url = new URL('https://www.wikidata.org/w/api.php');
+  for (const [key, value] of Object.entries({
+    action: 'wbsearchentities', search: query, language: 'en', uselang: 'en', type: 'item', limit: '12', format: 'json'
+  })) url.searchParams.set(key, value);
+  const payload = await wikimediaJSON(url);
+  return (payload.search || []).map(item => {
+    const description = discoveryText(item.description, 420);
+    const classified = discoveryKind(item.label, description);
+    if (!classified || (kind !== 'all' && classified !== kind)) return null;
+    return {
+      id: `wikidata-${item.id}`, type: classified, title: discoveryText(item.label, 180),
+      summary: description || 'Open the Wikidata entity for structured information.', imageUrl: null,
+      source: 'Wikidata', sourceLinks: [{ label: 'Wikidata', url: `https://www.wikidata.org/wiki/${encodeURIComponent(item.id)}` }]
+    };
+  }).filter(Boolean);
+}
+function normalizeDiscoveryTitle(value) {
+  return String(value || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function mergeDiscoveryResults(groups, limit = 24) {
+  const merged = new Map();
+  for (const item of groups.flat()) {
+    const key = `${item.type}:${normalizeDiscoveryTitle(item.title)}`;
+    if (!key || key.endsWith(':')) continue;
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, { ...item, sourceLinks: [...(item.sourceLinks || [])] });
+      continue;
+    }
+    for (const link of item.sourceLinks || []) {
+      if (!existing.sourceLinks.some(x => x.url === link.url)) existing.sourceLinks.push(link);
+    }
+    if (!existing.imageUrl && item.imageUrl) existing.imageUrl = item.imageUrl;
+    if ((!existing.summary || existing.summary.length < 90) && item.summary) existing.summary = item.summary;
+    const labels = new Set(existing.source.split(' + ').concat(item.source.split(' + ')));
+    existing.source = [...labels].join(' + ');
+  }
+  return [...merged.values()].slice(0, limit);
+}
+async function discoverComicKnowledge(query, kind) {
+  const cacheKey = `${kind}:${query.toLowerCase()}`;
+  const cached = comicDiscoveryCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  if (comicDiscoveryInFlight.has(cacheKey)) return comicDiscoveryInFlight.get(cacheKey);
+  const task = (async () => {
+    const [characters, comics, wiki, wikidata] = await Promise.all([
+      catalogRows('characters'), catalogRows('comics'),
+      searchWikipediaComics(query, kind).then(data => ({ data })).catch(error => ({ error })),
+      searchWikidataComics(query, kind).then(data => ({ data })).catch(error => ({ error }))
+    ]);
+    const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const localMatches = (items, type) => items
+      .filter(item => {
+        if (kind !== 'all' && kind !== type) return false;
+        const haystack = JSON.stringify(item).toLowerCase();
+        return tokens.every(token => haystack.includes(token));
+      })
+      .sort((a, b) => {
+        const at = normalizeDiscoveryTitle(a.name || a.title), bt = normalizeDiscoveryTitle(b.name || b.title), q = normalizeDiscoveryTitle(query);
+        return Number(bt === q) - Number(at === q) || Number(bt.startsWith(q)) - Number(at.startsWith(q));
+      })
+      .slice(0, 5)
+      .map(item => ({
+        id: `panelverse-${type}-${item.id}`, type, title: item.name || item.title,
+        summary: item.summary || item.description || 'An entry in the PanelVerse starter catalogue.', imageUrl: null,
+        source: 'PanelVerse catalogue', sourceLinks: item.publisherUrl ? [{ label: 'Publisher information', url: item.publisherUrl }] : []
+      }));
+    const resultGroups = [localMatches(characters, 'character'), localMatches(comics, 'comic'), wiki.data || [], wikidata.data || []];
+    const results = mergeDiscoveryResults(resultGroups);
+    const externalUnavailable = !wiki.data && !wikidata.data;
+    const value = {
+      query, type: kind, total: results.length, results,
+      sources: ['PanelVerse catalogue', ...(wiki.data ? ['Wikipedia'] : []), ...(wikidata.data ? ['Wikidata'] : [])],
+      externalUnavailable,
+      notice: externalUnavailable ? 'Live sources are temporarily unavailable. Showing matching entries from the PanelVerse catalogue when available.' : 'Results are filtered to comic books and superhero characters; film, television and other adaptation-only entries are excluded. External search coverage is not exhaustive.'
+    };
+    comicDiscoveryCache.set(cacheKey, { value, expires: Date.now() + 8 * 60 * 1000 });
+    if (comicDiscoveryCache.size > 250) {
+      const oldest = comicDiscoveryCache.keys().next().value;
+      if (oldest) comicDiscoveryCache.delete(oldest);
+    }
+    return value;
+  })();
+  comicDiscoveryInFlight.set(cacheKey, task);
+  try { return await task; } finally { comicDiscoveryInFlight.delete(cacheKey); }
+}
+
 async function initializeDatabase() {
   await pool.query(`CREATE TABLE IF NOT EXISTS users (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(60) NOT NULL, email VARCHAR(254) NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
     CREATE TABLE IF NOT EXISTS catalog (collection TEXT PRIMARY KEY, data JSONB NOT NULL);
@@ -65,16 +237,29 @@ async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS reading_progress (user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, comic_id TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('want-to-read','reading','completed')), progress INTEGER NOT NULL DEFAULT 0 CHECK(progress BETWEEN 0 AND 100), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,comic_id));
     CREATE INDEX IF NOT EXISTS shelves_user_idx ON shelves(user_id); CREATE INDEX IF NOT EXISTS progress_user_idx ON reading_progress(user_id);`);
   const file=path.join(ROOT,'data','db.json'); const legacy=JSON.parse(fs.readFileSync(file,'utf8'));
-  for (const key of ['characters','comics','readingPaths','adaptations','movies','storylines','events','teams','worlds']) {
+  const catalogCollections = ['characters','comics','readingPaths','adaptations','movies','storylines','events','teams','worlds'];
+  for (const key of catalogCollections) {
     await pool.query('INSERT INTO catalog(collection,data) VALUES($1,$2::jsonb) ON CONFLICT(collection) DO NOTHING',[key,JSON.stringify(Array.isArray(legacy[key])?legacy[key]:[])]);
   }
+  // Repair a handful of UTF-8 strings that were previously stored after an incorrect text decode.
+  // This is an in-place text-only cleanup; all catalogue records and IDs remain intact.
+  const encodingRepairs = [['â€™','’'],['Â·','·'],['â€“','–'],['PÃ©rez','Pérez'],['RibiÄ‡','Ribić']];
+  let repairedJSON = 'data::text';
+  const repairParams = [];
+  for (const [broken, corrected] of encodingRepairs) {
+    repairParams.push(broken, corrected);
+    repairedJSON = `replace(${repairedJSON}, $${repairParams.length - 1}, $${repairParams.length})`;
+  }
+  const collectionParam = repairParams.length + 1;
+  repairParams.push(catalogCollections, '%â%', '%Â%', '%Ã%');
+  await pool.query(`UPDATE catalog SET data=(${repairedJSON})::jsonb WHERE collection=ANY($${collectionParam}::text[]) AND (data::text LIKE $${collectionParam + 1} OR data::text LIKE $${collectionParam + 2} OR data::text LIKE $${collectionParam + 3})`, repairParams);
 }
 function ensureDB(){ if(!initPromise) initPromise=initializeDatabase(); return initPromise; }
 async function catalogRows(key) { const r=await pool.query('SELECT data FROM catalog WHERE collection=$1',[key]); return r.rows[0]?.data||[]; }
 async function route(req,res) {
   const url=new URL(req.url,`http://${req.headers.host||'localhost'}`); const pathname=decodeURIComponent(url.pathname);
   if(pathname.startsWith('/api/') && req.method!=='GET' && !checkOrigin(req)) return send(res,403,{error:'Request origin rejected.'});
-  if(pathname==='/api/health'&&req.method==='GET') { await ensureDB(); await pool.query('SELECT 1'); return send(res,200,{ok:true,name:'PanelVerse API',database:'connected',version:'2.0.0'}); }
+  if(pathname==='/api/health'&&req.method==='GET') { await ensureDB(); await pool.query('SELECT 1'); return send(res,200,{ok:true,name:'PanelVerse API',database:'connected',version:'2.1.1'}); }
   if(pathname==='/api/register'&&req.method==='POST') {
     if(rateLimited(req)) return send(res,429,{error:'Too many attempts. Please wait 15 minutes and try again.'});
     await ensureDB(); const input=await bodyOf(req); const name=clean(input.name,60); const email=clean(input.email,254).toLowerCase(); const password=typeof input.password==='string'?input.password:'';
@@ -114,6 +299,7 @@ async function route(req,res) {
     if(pathname==='/api/profiles'&&req.method==='GET'){const visitor=await getUser(req);return send(res,200,{data:visitor?[{id:'local',name:visitor.name,createdAt:null}]:[]});}
     if(pathname==='/api/guide'&&req.method==='POST'){const {question}=await bodyOf(req);const q=clean(question).toLowerCase();let answer='Try the character directory, then follow linked comics and screen adaptations to explore a universe.';if(q.includes('batman'))answer='A good comic starting point is Batman: Year One. You can then explore screen adaptations in Movies & series.';else if(q.includes('spider'))answer='Amazing Fantasy #15 is a classic Spider-Man starting point. Explore the Movies & series section for screen versions.';else if(q.includes('beginner')||q.includes('start'))answer='Start with a character you like, open their profile, then follow their comics, teams and screen appearances.';return send(res,200,{answer,mode:'PanelVerse discovery guide'});}
     if(pathname==='/api/discover/tmdb'&&req.method==='GET'){const q=clean(url.searchParams.get('q'),100);if(q.length<2)return send(res,400,{error:'Enter at least two characters to search.'});try{return send(res,200,await searchTMDB(q));}catch(error){return send(res,502,{error:error.message||'External movie search is unavailable.'});}}
+    if(pathname==='/api/discover/comics'&&req.method==='GET'){const q=clean(url.searchParams.get('q'),80),kind=clean(url.searchParams.get('type'),20)||'all';if(q.length<2)return send(res,400,{error:'Enter at least two characters to search.'});if(!['all','characters','comics'].includes(kind))return send(res,400,{error:'Choose all, characters, or comics.'});if(discoveryRateLimited(req))return send(res,429,{error:'Search limit reached. Please wait a few minutes before trying again.'});try{return send(res,200,await discoverComicKnowledge(q,kind==='characters'?'character':kind==='comics'?'comic':'all'));}catch(error){console.error('Comic discovery failed:',error);return send(res,502,{error:'Comic discovery is temporarily unavailable. Please try again.'});}}
     const user=await getUser(req);
     if(!user && !['/api/login','/api/register'].includes(pathname)) return send(res,401,{error:'Please sign in to your PanelVerse account.'});
     if(pathname==='/api/profiles'&&req.method==='GET') return send(res,200,{data:[{id:'local',name:user.name,createdAt:null}]});

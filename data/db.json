@@ -1,1223 +1,1215 @@
 {
-    "characters":  [
-                       {
-                           "id":  "spider-man",
-                           "name":  "Spider-Man",
-                           "identity":  "Peter Parker",
-                           "universe":  "Marvel",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Amazing Fantasy #15 (1962)",
-                           "summary":  "A quick-witted neighborhood hero balancing responsibility, friendships, and life in New York.",
-                           "powers":  [
-                                          "Wall-crawling",
-                                          "Spider-sense",
-                                          "Super strength"
-                                      ],
-                           "connections":  [
-                                               "Mary Jane Watson",
-                                               "Aunt May",
-                                               "The Avengers"
-                                           ],
-                           "publisherUrl":  "https://www.marvel.com/characters/spider-man-peter-parker",
-                           "groupAffiliations":  [
-                                                     "Mary Jane Watson",
-                                                     "Aunt May"
-                                                 ]
-                       },
-                       {
-                           "id":  "storm",
-                           "name":  "Storm",
-                           "identity":  "Ororo Munroe",
-                           "universe":  "Marvel",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Giant-Size X-Men #1 (1975)",
-                           "summary":  "A weather manipulator and one of the X-Menâ€™s defining leaders.",
-                           "powers":  [
-                                          "Weather control",
-                                          "Flight",
-                                          "Leadership"
-                                      ],
-                           "connections":  [
-                                               "X-Men",
-                                               "Kitty Pryde",
-                                               "Wakanda"
-                                           ],
-                           "publisherUrl":  "https://www.marvel.com/characters/storm",
-                           "groupAffiliations":  [
-                                                     "X-Men",
-                                                     "Kitty Pryde"
-                                                 ]
-                       },
-                       {
-                           "id":  "batman",
-                           "name":  "Batman",
-                           "identity":  "Bruce Wayne",
-                           "universe":  "DC",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Detective Comics #27 (1939)",
-                           "summary":  "Gothamâ€™s detective protector, armed with preparation, discipline, and resolve.",
-                           "powers":  [
-                                          "Detective skills",
-                                          "Martial arts",
-                                          "Technology"
-                                      ],
-                           "connections":  [
-                                               "Alfred Pennyworth",
-                                               "Robin",
-                                               "Commissioner Gordon"
-                                           ],
-                           "publisherUrl":  "https://www.dc.com/characters/batman",
-                           "groupAffiliations":  [
-                                                     "Alfred Pennyworth",
-                                                     "Robin"
-                                                 ]
-                       },
-                       {
-                           "id":  "wonder-woman",
-                           "name":  "Wonder Woman",
-                           "identity":  "Diana of Themyscira",
-                           "universe":  "DC",
-                           "kind":  "Hero",
-                           "firstAppearance":  "All Star Comics #8 (1941)",
-                           "summary":  "An Amazon warrior and ambassador for peace, compassion, and truth.",
-                           "powers":  [
-                                          "Super strength",
-                                          "Combat skill",
-                                          "Lasso of Truth"
-                                      ],
-                           "connections":  [
-                                               "Themyscira",
-                                               "Steve Trevor",
-                                               "Justice League"
-                                           ],
-                           "publisherUrl":  "https://www.dc.com/characters/wonder-woman",
-                           "groupAffiliations":  [
-                                                     "Themyscira",
-                                                     "Steve Trevor"
-                                                 ]
-                       },
-                       {
-                           "id":  "invincible",
-                           "name":  "Invincible",
-                           "identity":  "Mark Grayson",
-                           "universe":  "Independent",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Invincible #1 (2003)",
-                           "summary":  "A young hero figuring out what legacy means in a vast universe.",
-                           "powers":  [
-                                          "Flight",
-                                          "Super strength",
-                                          "Durability"
-                                      ],
-                           "connections":  [
-                                               "Atom Eve",
-                                               "William Clockwell",
-                                               "Guardians of the Globe"
-                                           ],
-                           "publisherUrl":  "https://imagecomics.com/comics/series/invincible",
-                           "groupAffiliations":  [
-                                                     "Atom Eve",
-                                                     "William Clockwell"
-                                                 ]
-                       },
-                       {
-                           "id":  "hellboy",
-                           "name":  "Hellboy",
-                           "identity":  "Anung Un Rama",
-                           "universe":  "Independent",
-                           "kind":  "Hero",
-                           "firstAppearance":  "San Diego Comic-Con Comics #2 (1993)",
-                           "summary":  "A paranormal investigator with a stubbornly human heart.",
-                           "powers":  [
-                                          "Right Hand of Doom",
-                                          "Paranormal expertise",
-                                          "Durability"
-                                      ],
-                           "connections":  [
-                                               "B.P.R.D.",
-                                               "Abe Sapien",
-                                               "Liz Sherman"
-                                           ],
-                           "publisherUrl":  "https://www.darkhorse.com/Comics/91-435/Hellboy-Seed-of-Destruction-1",
-                           "groupAffiliations":  [
-                                                     "B.P.R.D.",
-                                                     "Abe Sapien"
-                                                 ]
-                       },
-                       {
-                           "universe":  "DC",
-                           "powers":  [
-                                          "Unpredictability",
-                                          "Tactical planning",
-                                          "Customized weapons"
-                                      ],
-                           "kind":  "Villain",
-                           "name":  "The Joker",
-                           "identity":  "Unknown",
-                           "id":  "joker",
-                           "summary":  "Gotham chaos agent and enduring nemesis of Batman.",
-                           "firstAppearance":  "Batman #1 (1940)",
-                           "connections":  [
-                                               "Batman",
-                                               "Harley Quinn",
-                                               "Gotham City"
-                                           ],
-                           "groupAffiliations":  [
-                                                     "Gotham underworld"
-                                                 ],
-                           "publisherUrl":  "https://www.dc.com/characters/the-joker"
-                       },
-                       {
-                           "universe":  "Marvel",
-                           "powers":  [
-                                          "Super strength",
-                                          "Durability",
-                                          "Cosmic technology"
-                                      ],
-                           "kind":  "Villain",
-                           "name":  "Thanos",
-                           "identity":  "Thanos",
-                           "id":  "thanos",
-                           "summary":  "The Mad Titan pursues limitless power and threatens the wider Marvel Universe.",
-                           "firstAppearance":  "Iron Man #55 (1973)",
-                           "connections":  [
-                                               "Avengers",
-                                               "Adam Warlock",
-                                               "Black Order"
-                                           ],
-                           "groupAffiliations":  [
-                                                     "Black Order"
-                                                 ],
-                           "publisherUrl":  "https://www.marvel.com/characters/thanos/in-comics"
-                       },
-                       {
-                           "name":  "Superman",
-                           "publisherUrl":  "https://www.dc.com/characters/superman",
-                           "id":  "superman",
-                           "powers":  [
-                                          "Flight",
-                                          "Super strength",
-                                          "Heat vision"
-                                      ],
-                           "connections":  [
-                                               "Lois Lane",
-                                               "Supergirl",
-                                               "Justice League"
-                                           ],
-                           "identity":  "Clark Kent",
-                           "summary":  "The last survivor of Krypton, raised on Earth and guided by compassion and hope.",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Action Comics #1 (1938)",
-                           "universe":  "DC",
-                           "groupAffiliations":  [
-                                                     "Justice League",
-                                                     "Super-Family"
-                                                 ]
-                       },
-                       {
-                           "name":  "Black Panther",
-                           "publisherUrl":  "https://www.marvel.com/comics/discover/460/black-panther",
-                           "id":  "black-panther",
-                           "powers":  [
-                                          "Enhanced senses",
-                                          "Combat skill",
-                                          "Vibranium technology"
-                                      ],
-                           "connections":  [
-                                               "Wakanda",
-                                               "Avengers",
-                                               "Dora Milaje"
-                                           ],
-                           "identity":  "T Challa",
-                           "summary":  "Wakanda protector, combining leadership, skill, and advanced technology.",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Fantastic Four #52 (1966)",
-                           "universe":  "Marvel",
-                           "groupAffiliations":  [
-                                                     "Avengers",
-                                                     "Wakanda"
-                                                 ]
-                       },
-                       {
-                           "name":  "Captain America",
-                           "publisherUrl":  "https://www.marvel.com/characters/captain-america-steve-rogers",
-                           "id":  "captain-america",
-                           "powers":  [
-                                          "Enhanced physical ability",
-                                          "Tactical leadership",
-                                          "Shield mastery"
-                                      ],
-                           "connections":  [
-                                               "Avengers",
-                                               "Bucky Barnes",
-                                               "Sam Wilson"
-                                           ],
-                           "identity":  "Steve Rogers",
-                           "summary":  "A decorated super-soldier who stands for courage, service, and teamwork.",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Captain America Comics #1 (1941)",
-                           "universe":  "Marvel",
-                           "groupAffiliations":  [
-                                                     "Avengers"
-                                                 ]
-                       },
-                       {
-                           "name":  "Spider-Man (Miles Morales)",
-                           "publisherUrl":  "https://www.marvel.com/characters/spider-man-miles-morales/in-comics/profile",
-                           "id":  "miles-morales",
-                           "powers":  [
-                                          "Wall-crawling",
-                                          "Venom blast",
-                                          "Camouflage"
-                                      ],
-                           "connections":  [
-                                               "Peter Parker",
-                                               "Spider-Verse",
-                                               "Gwen Stacy"
-                                           ],
-                           "identity":  "Miles Morales",
-                           "summary":  "A Brooklyn teenager who carries the Spider-Man legacy in his own way.",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Ultimate Fallout #4 (2011)",
-                           "universe":  "Marvel",
-                           "groupAffiliations":  [
-                                                     "Spider-Verse",
-                                                     "Champions"
-                                                 ]
-                       },
-                       {
-                           "name":  "The Flash",
-                           "publisherUrl":  "https://www.dc.com/characters/the-flash",
-                           "id":  "flash",
-                           "powers":  [
-                                          "Super speed",
-                                          "Time travel",
-                                          "Lightning control"
-                                      ],
-                           "connections":  [
-                                               "Justice League",
-                                               "Iris West",
-                                               "Reverse-Flash"
-                                           ],
-                           "identity":  "Barry Allen",
-                           "summary":  "A Central City hero whose connection to the Speed Force reaches across time and dimensions.",
-                           "kind":  "Hero",
-                           "firstAppearance":  "Flash Comics #1 (1940)",
-                           "universe":  "DC",
-                           "groupAffiliations":  [
-                                                     "Justice League",
-                                                     "Justice Society"
-                                                 ]
-                       },
-                       {
-                           "name":  "Green Goblin",
-                           "publisherUrl":  "https://www.marvel.com/characters/green-goblin-norman-osborn/in-comics/profile",
-                           "id":  "green-goblin",
-                           "powers":  [
-                                          "Genius intellect",
-                                          "Goblin glider",
-                                          "Pumpkin bombs"
-                                      ],
-                           "connections":  [
-                                               "Spider-Man",
-                                               "Harry Osborn",
-                                               "Sinister Six"
-                                           ],
-                           "identity":  "Norman Osborn",
-                           "summary":  "A brilliant inventor and a personal adversary of Spider-Man.",
-                           "kind":  "Villain",
-                           "firstAppearance":  "The Amazing Spider-Man #14 (1964)",
-                           "universe":  "Marvel",
-                           "groupAffiliations":  [
-                                                     "Sinister Six"
-                                                 ]
-                       },
-                       {
-                           "name":  "Lex Luthor",
-                           "publisherUrl":  "https://www.dc.com/characters/lex-luthor",
-                           "id":  "lex-luthor",
-                           "powers":  [
-                                          "Genius intellect",
-                                          "Wealth",
-                                          "Powered armor"
-                                      ],
-                           "connections":  [
-                                               "Superman",
-                                               "Metropolis",
-                                               "Legion of Doom"
-                                           ],
-                           "identity":  "Lex Luthor",
-                           "summary":  "A brilliant industrialist whose ambition and rivalry make him a persistent threat to Superman.",
-                           "kind":  "Villain",
-                           "firstAppearance":  "Action Comics #23 (1940)",
-                           "universe":  "DC",
-                           "groupAffiliations":  [
-                                                     "Legion of Doom"
-                                                 ]
-                       },
-                       {
-                           "name":  "Darkseid",
-                           "publisherUrl":  "https://www.dc.com/characters/darkseid",
-                           "id":  "darkseid",
-                           "powers":  [
-                                          "Omega Beams",
-                                          "Immortality",
-                                          "Cosmic strength"
-                                      ],
-                           "connections":  [
-                                               "Apokolips",
-                                               "Justice League",
-                                               "New Gods"
-                                           ],
-                           "identity":  "Uxas",
-                           "summary":  "The ruler of Apokolips seeks absolute control across worlds and realities.",
-                           "kind":  "Villain",
-                           "firstAppearance":  "1970 (Jimmy Olsen #134)",
-                           "universe":  "DC",
-                           "groupAffiliations":  [
-                                                     "Apokolips",
-                                                     "Darkseid forces"
-                                                 ]
-                       }
-                   ],
-    "comics":  [
-                   {
-                       "id":  "amazing-fantasy-15",
-                       "title":  "Amazing Fantasy #15",
-                       "creators":  "Stan Lee Â· Steve Ditko",
-                       "universe":  "Marvel",
-                       "format":  "Origin issue",
-                       "description":  "A landmark first appearance and compact origin story.",
-                       "publisherUrl":  "https://www.marvel.com/comics/issue/16926/amazing_fantasy_1962_15"
-                   },
-                   {
-                       "id":  "batman-year-one",
-                       "title":  "Batman: Year One",
-                       "creators":  "Frank Miller Â· David Mazzucchelli",
-                       "universe":  "DC",
-                       "format":  "Complete story",
-                       "description":  "A grounded beginning for Batman and Jim Gordon.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/batman-year-one"
-                   },
-                   {
-                       "id":  "all-star-superman",
-                       "title":  "All-Star Superman",
-                       "creators":  "Grant Morrison Â· Frank Quitely",
-                       "universe":  "DC",
-                       "format":  "Complete story",
-                       "description":  "A self-contained celebration of Superman.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/all-star-superman"
-                   },
-                   {
-                       "id":  "invincible-vol-1",
-                       "title":  "Invincible, Vol. 1: Family Matters",
-                       "creators":  "Robert Kirkman Â· Cory Walker",
-                       "universe":  "Independent",
-                       "format":  "Collected edition",
-                       "description":  "The start of a creator-owned superhero saga.",
-                       "publisherUrl":  "https://imagecomics.com/comics/releases/invincible-vol-1-family-matters-tp"
-                   },
-                   {
-                       "id":  "long-halloween",
-                       "title":  "Batman: The Long Halloween",
-                       "creators":  "Jeph Loeb Â· Tim Sale",
-                       "universe":  "DC",
-                       "format":  "Limited series",
-                       "description":  "A year of Gotham mysteries and evolving alliances.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/batman-the-long-halloween"
-                   },
-                   {
-                       "publisherUrl":  "https://www.marvel.com/comics/issue/9286/infinity-gauntlet-1991-1",
-                       "creators":  "Jim Starlin Â· George PÃ©rez",
-                       "format":  "Event",
-                       "id":  "infinity-gauntlet",
-                       "universe":  "Marvel",
-                       "description":  "Thanos claims the Infinity Gauntlet and Earth heroes unite against him.",
-                       "title":  "The Infinity Gauntlet",
-                       "year":  1991
-                   },
-                   {
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/joker",
-                       "creators":  "Brian Azzarello Â· Lee Bermejo",
-                       "format":  "Graphic novel",
-                       "id":  "joker-graphic-novel",
-                       "universe":  "DC",
-                       "description":  "A standalone crime story centered on the most notorious villain in Gotham.",
-                       "title":  "Joker",
-                       "year":  2008
-                   },
-                   {
-                       "creators":  "Jonathan Hickman Â· Esad RibiÄ‡",
-                       "format":  "Multiverse event",
-                       "id":  "secret-wars-2015",
-                       "description":  "A multiverse-spanning event that reshapes the Marvel Universe around Battleworld.",
-                       "publisherUrl":  "https://www.marvel.com/comics/series/19648/secret_wars_%282015_-_present%29",
-                       "title":  "Secret Wars",
-                       "year":  2015,
-                       "universe":  "Marvel"
-                   },
-                   {
-                       "creators":  "Marv Wolfman Â· George PÃ©rez",
-                       "format":  "Multiverse event",
-                       "id":  "crisis-infinite-earths",
-                       "description":  "Heroes from across time and alternate Earths unite against the Anti-Monitor.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/crisis-on-infinite-earths-1985/crisis-on-infinite-earths",
-                       "title":  "Crisis on Infinite Earths",
-                       "year":  1985,
-                       "universe":  "DC"
-                   },
-                   {
-                       "creators":  "Geoff Johns Â· Andy Kubert",
-                       "format":  "Event",
-                       "id":  "flashpoint",
-                       "description":  "A changed past leaves Barry Allen in a dramatically altered reality.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/flashpoint-2011/flashpoint",
-                       "title":  "Flashpoint",
-                       "year":  2011,
-                       "universe":  "DC"
-                   },
-                   {
-                       "creators":  "Mark Millar Â· Steve McNiven",
-                       "format":  "Event",
-                       "id":  "civil-war",
-                       "description":  "A conflict over superhero registration divides heroes and allies.",
-                       "publisherUrl":  "https://www.marvel.com/comics/series/1102/civil_war_2006",
-                       "title":  "Civil War",
-                       "year":  2006,
-                       "universe":  "Marvel"
-                   },
-                   {
-                       "creators":  "Dan Slott Â· Olivier Coipel",
-                       "format":  "Multiverse event",
-                       "id":  "spider-verse",
-                       "description":  "Spider-heroes from across realities join forces against a threat to their kind.",
-                       "publisherUrl":  "https://www.marvel.com/comics/discover/1064/spider-verse",
-                       "title":  "Spider-Verse",
-                       "year":  2014,
-                       "universe":  "Marvel"
-                   },
-                   {
-                       "creators":  "Frank Miller Â· Klaus Janson",
-                       "format":  "Complete story",
-                       "id":  "dark-knight-returns",
-                       "description":  "An older Bruce Wayne returns to Gotham in a separate future continuity.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/batman-the-dark-knight-returns",
-                       "title":  "The Dark Knight Returns",
-                       "year":  1986,
-                       "universe":  "DC"
-                   }
-               ],
-    "readingPaths":  [
-                         {
-                             "id":  "first-steps",
-                             "title":  "First steps",
-                             "level":  "Beginner",
-                             "description":  "Three approachable starting points across universes.",
-                             "items":  [
-                                           "Amazing Fantasy #15",
-                                           "Batman: Year One",
-                                           "Invincible, Vol. 1: Family Matters"
-                                       ]
-                         },
-                         {
-                             "id":  "gotham-detective",
-                             "title":  "Gotham: Year One onward",
-                             "level":  "Beginner",
-                             "description":  "Follow Batman from his early days into a city-wide mystery.",
-                             "items":  [
-                                           "Batman: Year One",
-                                           "Batman: The Long Halloween"
-                                       ]
-                         },
-                         {
-                             "id":  "self-contained",
-                             "title":  "One-and-done stories",
-                             "level":  "Easy entry",
-                             "description":  "Complete stories you can enjoy without a long reading list.",
-                             "items":  [
-                                           "Batman: Year One",
-                                           "All-Star Superman"
-                                       ]
-                         }
-                     ],
-    "adaptations":  [
-                        {
-                            "id":  "spider-screen",
-                            "title":  "Spider-Man across film",
-                            "universe":  "Marvel",
-                            "medium":  "Film",
-                            "description":  "Compare Peter Parkerâ€™s origins and supporting cast across screen versions.",
-                            "publisherUrl":  "https://www.marvel.com/movies"
-                        },
-                        {
-                            "id":  "batman-screen",
-                            "title":  "Batman on screen",
-                            "universe":  "DC",
-                            "medium":  "Film \u0026 series",
-                            "description":  "Explore different interpretations, from detective stories to Gotham adventures.",
-                            "publisherUrl":  "https://www.dc.com/movies"
-                        },
-                        {
-                            "id":  "invincible-screen",
-                            "title":  "Invincible: page to series",
-                            "universe":  "Independent",
-                            "medium":  "Animation",
-                            "description":  "See how a long-form comic saga becomes an animated adaptation.",
-                            "publisherUrl":  "https://imagecomics.com/comics/series/invincible"
-                        }
-                    ],
-    "movies":  [
-                   {
-                       "genres":  [
-                                      "Origin",
-                                      "Action"
-                                  ],
-                       "title":  "Spider-Man",
-                       "year":  2002,
-                       "publisherUrl":  "https://www.marvel.com/movies/Spider-Man",
-                       "relatedComicId":  "amazing-fantasy-15",
-                       "characters":  [
-                                          "spider-man"
-                                      ],
-                       "universe":  "Marvel",
-                       "summary":  "Peter Parker becomes Spider-Man and faces the Green Goblin.",
-                       "cast":  [
-                                    "Tobey Maguire",
-                                    "Kirsten Dunst",
-                                    "Willem Dafoe"
-                                ],
-                       "id":  "spider-man-2002",
-                       "continuity":  "Raimi films",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Adventure",
-                                      "Action"
-                                  ],
-                       "title":  "Spider-Man: Far From Home",
-                       "year":  2019,
-                       "publisherUrl":  "https://www.marvel.com/movies/spider-man-far-from-home",
-                       "relatedComicId":  "amazing-fantasy-15",
-                       "characters":  [
-                                          "spider-man"
-                                      ],
-                       "universe":  "Marvel",
-                       "summary":  "Peter Parker travels abroad while new threats reshape his world.",
-                       "cast":  [
-                                    "Tom Holland",
-                                    "Samuel L. Jackson",
-                                    "Zendaya"
-                                ],
-                       "id":  "spider-man-far-from-home",
-                       "continuity":  "Marvel Cinematic Universe",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Science fiction",
-                                      "Adventure"
-                                  ],
-                       "title":  "Ant-Man and The Wasp: Quantumania",
-                       "year":  2023,
-                       "publisherUrl":  "https://www.marvel.com/antman",
-                       "characters":  [
-
-                                      ],
-                       "universe":  "Marvel",
-                       "summary":  "Scott Lang and Hope van Dyne return for a journey into the Quantum Realm.",
-                       "cast":  [
-                                    "Paul Rudd",
-                                    "Evangeline Lilly",
-                                    "Jonathan Majors"
-                                ],
-                       "id":  "ant-man-quantumania",
-                       "continuity":  "Marvel Cinematic Universe",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Origin",
-                                      "Adventure"
-                                  ],
-                       "title":  "Wonder Woman",
-                       "year":  2017,
-                       "publisherUrl":  "https://www.dc.com/movies/wonder-woman-2017",
-                       "characters":  [
-                                          "wonder-woman"
-                                      ],
-                       "universe":  "DC",
-                       "summary":  "Diana leaves Themyscira and discovers her role in a world at war.",
-                       "cast":  [
-                                    "Gal Gadot",
-                                    "Chris Pine"
-                                ],
-                       "id":  "wonder-woman-2017",
-                       "continuity":  "DC films",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Team-up",
-                                      "Action"
-                                  ],
-                       "title":  "Justice League",
-                       "year":  2017,
-                       "publisherUrl":  "https://www.dc.com/movies/justice-league-2017",
-                       "characters":  [
-                                          "batman",
-                                          "wonder-woman"
-                                      ],
-                       "universe":  "DC",
-                       "summary":  "Batman and Wonder Woman assemble heroes to face a threat to Earth.",
-                       "cast":  [
-                                    "Ben Affleck",
-                                    "Gal Gadot",
-                                    "Jason Momoa"
-                                ],
-                       "id":  "justice-league-2017",
-                       "continuity":  "DC films",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Adventure",
-                                      "Action"
-                                  ],
-                       "title":  "Superman",
-                       "year":  2025,
-                       "publisherUrl":  "https://www.dc.com/movies/superman-2025",
-                       "characters":  [
-
-                                      ],
-                       "universe":  "DC",
-                       "summary":  "A DC Universe feature centered on Superman and his belief in humanity.",
-                       "cast":  [
-                                    "David Corenswet",
-                                    "Rachel Brosnahan",
-                                    "Nicholas Hoult"
-                                ],
-                       "id":  "superman-2025",
-                       "continuity":  "DC Universe",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Drama",
-                                      "Crime"
-                                  ],
-                       "title":  "Joker",
-                       "year":  2019,
-                       "publisherUrl":  "https://www.dc.com/movies/joker-2019",
-                       "relatedComicId":  "joker-graphic-novel",
-                       "characters":  [
-                                          "joker"
-                                      ],
-                       "universe":  "DC",
-                       "summary":  "A standalone character study following Arthur Fleck in Gotham.",
-                       "cast":  [
-                                    "Joaquin Phoenix",
-                                    "Robert De Niro",
-                                    "Zazie Beetz"
-                                ],
-                       "id":  "joker-2019",
-                       "continuity":  "Standalone",
-                       "medium":  "Film"
-                   },
-                   {
-                       "genres":  [
-                                      "Animation",
-                                      "Action"
-                                  ],
-                       "title":  "Invincible Â· Season 1",
-                       "year":  2021,
-                       "publisherUrl":  "https://www.primevideo.com/detail/0K677J96WQ96K6UY6BL15O70CO",
-                       "relatedComicId":  "invincible-vol-1",
-                       "characters":  [
-                                          "invincible"
-                                      ],
-                       "universe":  "Independent",
-                       "summary":  "Mark Grayson discovers powers and a family legacy more complicated than expected.",
-                       "cast":  [
-                                    "Steven Yeun",
-                                    "Sandra Oh",
-                                    "J.K. Simmons"
-                                ],
-                       "id":  "invincible-season-1",
-                       "continuity":  "Animated series",
-                       "medium":  "Series"
-                   },
-                   {
-                       "title":  "Avengers: Infinity War",
-                       "publisherUrl":  "https://www.marvel.com/movies/avengers-infinity-war",
-                       "cast":  [
-                                    "Robert Downey Jr.",
-                                    "Chris Hemsworth",
-                                    "Josh Brolin"
-                                ],
-                       "year":  2018,
-                       "continuity":  "Marvel Cinematic Universe",
-                       "medium":  "Film",
-                       "id":  "avengers-infinity-war",
-                       "characters":  [
-                                          "thanos",
-                                          "spider-man"
-                                      ],
-                       "universe":  "Marvel",
-                       "summary":  "The Avengers and their allies face Thanos as he seeks the Infinity Stones.",
-                       "genres":  [
-                                      "Team-up",
-                                      "Cosmic"
-                                  ],
-                       "relatedComicId":  "infinity-gauntlet"
-                   },
-                   {
-                       "title":  "Avengers: Endgame",
-                       "publisherUrl":  "https://www.marvel.com/movies/avengers-endgame",
-                       "cast":  [
-                                    "Robert Downey Jr.",
-                                    "Chris Evans",
-                                    "Mark Ruffalo"
-                                ],
-                       "year":  2019,
-                       "continuity":  "Marvel Cinematic Universe",
-                       "medium":  "Film",
-                       "id":  "avengers-endgame",
-                       "characters":  [
-                                          "thanos",
-                                          "spider-man"
-                                      ],
-                       "universe":  "Marvel",
-                       "summary":  "The remaining Avengers take a final stand after the universe-shaking events caused by Thanos.",
-                       "genres":  [
-                                      "Team-up",
-                                      "Adventure"
-                                  ],
-                       "relatedComicId":  "infinity-gauntlet"
-                   },
-                   {
-                       "title":  "Batman: Year One",
-                       "publisherUrl":  "https://www.dc.com/movies/batman-year-one-2011",
-                       "cast":  [
-                                    "Bryan Cranston",
-                                    "Ben McKenzie",
-                                    "Eliza Dushku"
-                                ],
-                       "year":  2011,
-                       "continuity":  "DC animated film",
-                       "medium":  "Film",
-                       "id":  "batman-year-one-2011",
-                       "characters":  [
-                                          "batman",
-                                          "joker"
-                                      ],
-                       "universe":  "DC",
-                       "summary":  "An animated adaptation of the graphic novel follows Bruce Wayne as he begins his life as Batman.",
-                       "genres":  [
-                                      "Animation",
-                                      "Origin"
-                                  ],
-                       "relatedComicId":  "batman-year-one"
-                   }
-               ],
-    "storylines":  [
-                       {
-                           "screenIds":  [
-                                             "spider-man-2002",
-                                             "spider-man-far-from-home"
-                                         ],
-                           "title":  "Spider-Man: the origin",
-                           "year":  1962,
-                           "type":  "Character origin",
-                           "description":  "A compact origin introduces Peter Parker and the responsibility that shapes his life as Spider-Man.",
-                           "characters":  [
-                                              "spider-man"
-                                          ],
-                           "universe":  "Marvel",
-                           "difficulty":  "Beginner",
-                           "readingOrder":  [
-                                                "Amazing Fantasy #15"
-                                            ],
-                           "id":  "spider-origin"
-                       },
-                       {
-                           "screenIds":  [
-                                             "batman-year-one-2011"
-                                         ],
-                           "title":  "Batman: Year One",
-                           "year":  1987,
-                           "type":  "Character origin",
-                           "description":  "A grounded first year for Bruce Wayne and Jim Gordon in Gotham.",
-                           "characters":  [
-                                              "batman",
-                                              "joker"
-                                          ],
-                           "universe":  "DC",
-                           "difficulty":  "Beginner",
-                           "readingOrder":  [
-                                                "Batman: Year One"
-                                            ],
-                           "id":  "batman-year-one"
-                       },
-                       {
-                           "screenIds":  [
-                                             "avengers-infinity-war",
-                                             "avengers-endgame"
-                                         ],
-                           "title":  "The Infinity Gauntlet",
-                           "year":  1991,
-                           "type":  "Cosmic event",
-                           "description":  "Thanos obtains near-omnipotent power, drawing Marvel heroes into a cosmic conflict.",
-                           "characters":  [
-                                              "thanos",
-                                              "spider-man"
-                                          ],
-                           "universe":  "Marvel",
-                           "difficulty":  "Intermediate",
-                           "readingOrder":  [
-                                                "The Infinity Gauntlet #1â€“6"
-                                            ],
-                           "id":  "infinity-gauntlet-event"
-                       },
-                       {
-                           "screenIds":  [
-                                             "invincible-season-1"
-                                         ],
-                           "title":  "Invincible: Family Matters",
-                           "year":  2003,
-                           "type":  "Series opening",
-                           "description":  "Mark Grayson begins life as a hero and learns that family legacies can be complicated.",
-                           "characters":  [
-                                              "invincible"
-                                          ],
-                           "universe":  "Independent",
-                           "difficulty":  "Beginner",
-                           "readingOrder":  [
-                                                "Invincible, Vol. 1: Family Matters"
-                                            ],
-                           "id":  "invincible-family"
-                       }
-                   ],
-    "events":  [
-                   {
-                       "storylineId":  "infinity-gauntlet-event",
-                       "type":  "Cosmic event",
-                       "year":  1991,
-                       "comicIds":  [
-                                        "infinity-gauntlet"
-                                    ],
-                       "universe":  "Marvel",
-                       "id":  "infinity-gauntlet-event",
-                       "title":  "The Infinity Gauntlet",
-                       "participants":  [
-                                            "thanos",
-                                            "captain-america",
-                                            "black-panther",
-                                            "spider-man"
-                                        ],
-                       "summary":  "Thanos claims the Infinity Gauntlet and heroes across the Marvel Universe unite against him.",
-                       "publisherUrl":  "https://www.marvel.com/comics/issue/9286/infinity-gauntlet-1991-1"
-                   },
-                   {
-                       "storylineId":  "secret-wars",
-                       "type":  "Multiverse event",
-                       "year":  2015,
-                       "comicIds":  [
-                                        "secret-wars-2015"
-                                    ],
-                       "universe":  "Marvel",
-                       "id":  "secret-wars-event",
-                       "title":  "Secret Wars",
-                       "participants":  [
-                                            "spider-man",
-                                            "miles-morales",
-                                            "black-panther"
-                                        ],
-                       "summary":  "The Marvel multiverse collapses into Battleworld, changing the shape of reality.",
-                       "publisherUrl":  "https://www.marvel.com/comics/series/19648/secret_wars_%282015_-_present%29"
-                   },
-                   {
-                       "storylineId":  "crisis-event",
-                       "type":  "Multiverse event",
-                       "year":  1985,
-                       "comicIds":  [
-                                        "crisis-infinite-earths"
-                                    ],
-                       "universe":  "DC",
-                       "id":  "crisis-event",
-                       "title":  "Crisis on Infinite Earths",
-                       "participants":  [
-                                            "superman",
-                                            "batman",
-                                            "wonder-woman",
-                                            "flash"
-                                        ],
-                       "summary":  "A coalition of heroes from across Earths confronts the Anti-Monitor.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/crisis-on-infinite-earths-1985/crisis-on-infinite-earths"
-                   },
-                   {
-                       "storylineId":  "flashpoint",
-                       "type":  "Timeline event",
-                       "year":  2011,
-                       "comicIds":  [
-                                        "flashpoint"
-                                    ],
-                       "universe":  "DC",
-                       "id":  "flashpoint-event",
-                       "title":  "Flashpoint",
-                       "participants":  [
-                                            "flash",
-                                            "batman",
-                                            "superman"
-                                        ],
-                       "summary":  "Barry Allen wakes in an altered timeline and seeks to understand what changed.",
-                       "publisherUrl":  "https://www.dc.com/graphic-novels/flashpoint-2011/flashpoint"
-                   },
-                   {
-                       "storylineId":  "civil-war",
-                       "type":  "Hero conflict",
-                       "year":  2006,
-                       "comicIds":  [
-                                        "civil-war"
-                                    ],
-                       "universe":  "Marvel",
-                       "id":  "civil-war-event",
-                       "title":  "Civil War",
-                       "participants":  [
-                                            "captain-america",
-                                            "spider-man",
-                                            "black-panther"
-                                        ],
-                       "summary":  "A superhero registration debate divides former allies across the Marvel Universe.",
-                       "publisherUrl":  "https://www.marvel.com/comics/series/1102/civil_war_2006"
-                   },
-                   {
-                       "storylineId":  "spider-verse",
-                       "type":  "Multiverse event",
-                       "year":  2014,
-                       "comicIds":  [
-                                        "spider-verse"
-                                    ],
-                       "universe":  "Marvel",
-                       "id":  "spider-verse-event",
-                       "title":  "Spider-Verse",
-                       "participants":  [
-                                            "spider-man",
-                                            "miles-morales"
-                                        ],
-                       "summary":  "Spider-heroes from multiple realities unite against a shared threat.",
-                       "publisherUrl":  "https://www.marvel.com/comics/discover/1064/spider-verse"
-                   }
-               ],
-    "teams":  [
-                  {
-                      "publisherUrl":  "https://www.marvel.com/teams-and-groups/avengers/in-comics",
-                      "summary":  "A flexible team of heroes assembled to meet threats beyond one individual.",
-                      "id":  "avengers",
-                      "name":  "Avengers",
-                      "kind":  "Hero team",
-                      "base":  "Earth",
-                      "members":  [
-                                      "spider-man",
-                                      "captain-america",
-                                      "black-panther",
-                                      "storm"
-                                  ],
-                      "universe":  "Marvel"
-                  },
-                  {
-                      "publisherUrl":  "https://www.marvel.com/teams-and-groups/x-men",
-                      "summary":  "Mutant heroes who defend a world that often fears and misunderstands them.",
-                      "id":  "x-men",
-                      "name":  "X-Men",
-                      "kind":  "Mutant team",
-                      "base":  "Xavier School",
-                      "members":  [
-                                      "storm"
-                                  ],
-                      "universe":  "Marvel"
-                  },
-                  {
-                      "publisherUrl":  "https://www.dc.com/characters/justice-league",
-                      "summary":  "A coalition of DC heroes protecting Earth from global and cosmic threats.",
-                      "id":  "justice-league",
-                      "name":  "Justice League",
-                      "kind":  "Hero team",
-                      "base":  "Watchtower",
-                      "members":  [
-                                      "batman",
-                                      "superman",
-                                      "wonder-woman",
-                                      "flash"
-                                  ],
-                      "universe":  "DC"
-                  },
-                  {
-                      "publisherUrl":  "https://www.marvel.com/characters/thanos/in-comics",
-                      "summary":  "A powerful group of agents serving Thanos.",
-                      "id":  "black-order",
-                      "name":  "Black Order",
-                      "kind":  "Villain team",
-                      "base":  "Across the cosmos",
-                      "members":  [
-                                      "thanos"
-                                  ],
-                      "universe":  "Marvel"
-                  },
-                  {
-                      "publisherUrl":  "https://www.dc.com/characters/the-joker",
-                      "summary":  "A loose collection of criminals and adversaries operating in Gotham City.",
-                      "id":  "gotham-rogues",
-                      "name":  "Gotham rogues",
-                      "kind":  "Villain network",
-                      "base":  "Gotham City",
-                      "members":  [
-                                      "joker"
-                                  ],
-                      "universe":  "DC"
-                  },
-                  {
-                      "publisherUrl":  "https://www.marvel.com/characters/green-goblin-norman-osborn/in-comics/profile",
-                      "summary":  "A recurring alliance of Spider-Man adversaries.",
-                      "id":  "sinister-six",
-                      "name":  "Sinister Six",
-                      "kind":  "Villain team",
-                      "base":  "New York",
-                      "members":  [
-                                      "green-goblin"
-                                  ],
-                      "universe":  "Marvel"
-                  },
-                  {
-                      "publisherUrl":  "https://imagecomics.com/comics/series/invincible",
-                      "summary":  "A prominent superhero team in the Invincible universe.",
-                      "id":  "guardians-globe",
-                      "name":  "Guardians of the Globe",
-                      "kind":  "Hero team",
-                      "base":  "Earth",
-                      "members":  [
-                                      "invincible"
-                                  ],
-                      "universe":  "Independent"
-                  },
-                  {
-                      "publisherUrl":  "https://www.marvel.com/comics/discover/1064/spider-verse",
-                      "summary":  "Spider-powered heroes from many realities, connected by a shared legacy.",
-                      "id":  "spider-heroes",
-                      "name":  "Spider-heroes",
-                      "kind":  "Multiverse network",
-                      "base":  "Across the multiverse",
-                      "members":  [
-                                      "spider-man",
-                                      "miles-morales"
-                                  ],
-                      "universe":  "Marvel"
-                  }
-              ],
-    "worlds":  [
-                   {
-                       "keyEvents":  [
-                                         "infinity-gauntlet-event",
-                                         "civil-war-event",
-                                         "secret-wars-event"
-                                     ],
-                       "featuredCharacters":  [
-                                                  "spider-man",
-                                                  "storm",
-                                                  "captain-america",
-                                                  "black-panther",
-                                                  "thanos"
-                                              ],
-                       "name":  "Earth-616",
-                       "universe":  "Marvel",
-                       "id":  "earth-616",
-                       "continuity":  "Core comics",
-                       "summary":  "The primary Marvel Comics setting for many ongoing character and team stories.",
-                       "publisherUrl":  "https://www.marvel.com/",
-                       "featuredTeams":  [
-                                             "avengers",
-                                             "x-men",
-                                             "black-order"
-                                         ]
-                   },
-                   {
-                       "keyEvents":  [
-                                         "secret-wars-event",
-                                         "spider-verse-event"
-                                     ],
-                       "featuredCharacters":  [
-                                                  "miles-morales",
-                                                  "spider-man"
-                                              ],
-                       "name":  "Ultimate Universe",
-                       "universe":  "Marvel",
-                       "id":  "earth-1610",
-                       "continuity":  "Alternate Earth",
-                       "summary":  "An alternate Marvel setting that introduced a different generation and history for familiar heroes.",
-                       "publisherUrl":  "https://www.marvel.com/comics",
-                       "featuredTeams":  [
-                                             "spider-heroes"
-                                         ]
-                   },
-                   {
-                       "keyEvents":  [
-                                         "crisis-event",
-                                         "flashpoint-event"
-                                     ],
-                       "featuredCharacters":  [
-                                                  "batman",
-                                                  "superman",
-                                                  "wonder-woman",
-                                                  "flash",
-                                                  "joker",
-                                                  "lex-luthor"
-                                              ],
-                       "name":  "Earth-0 / Prime Earth",
-                       "universe":  "DC",
-                       "id":  "earth-0",
-                       "continuity":  "Core comics",
-                       "summary":  "The central DC setting for many modern hero, team, and event stories.",
-                       "publisherUrl":  "https://www.dc.com/comics",
-                       "featuredTeams":  [
-                                             "justice-league",
-                                             "gotham-rogues"
-                                         ]
-                   },
-                   {
-                       "keyEvents":  [
-
-                                     ],
-                       "featuredCharacters":  [
-                                                  "batman",
-                                                  "superman",
-                                                  "joker"
-                                              ],
-                       "name":  "Elseworlds",
-                       "universe":  "DC",
-                       "id":  "dc-elseworlds",
-                       "continuity":  "Standalone worlds",
-                       "summary":  "Standalone DC stories that explore alternate histories, futures, and imagined settings.",
-                       "publisherUrl":  "https://www.dc.com/comics",
-                       "featuredTeams":  [
-
-                                         ]
-                   },
-                   {
-                       "keyEvents":  [
-                                         "invincible-family"
-                                     ],
-                       "featuredCharacters":  [
-                                                  "invincible"
-                                              ],
-                       "name":  "Invincible Universe",
-                       "universe":  "Independent",
-                       "id":  "invincible-universe",
-                       "continuity":  "Image Comics",
-                       "summary":  "A creator-owned superhero setting following Mark Grayson and a wide cast of heroes.",
-                       "publisherUrl":  "https://imagecomics.com/comics/series/invincible",
-                       "featuredTeams":  [
-                                             "guardians-globe"
-                                         ]
-                   }
-               ]
+  "characters": [
+    {
+      "id": "spider-man",
+      "name": "Spider-Man",
+      "identity": "Peter Parker",
+      "universe": "Marvel",
+      "kind": "Hero",
+      "firstAppearance": "Amazing Fantasy #15 (1962)",
+      "summary": "A quick-witted neighborhood hero balancing responsibility, friendships, and life in New York.",
+      "powers": [
+        "Wall-crawling",
+        "Spider-sense",
+        "Super strength"
+      ],
+      "connections": [
+        "Mary Jane Watson",
+        "Aunt May",
+        "The Avengers"
+      ],
+      "publisherUrl": "https://www.marvel.com/characters/spider-man-peter-parker",
+      "groupAffiliations": [
+        "Mary Jane Watson",
+        "Aunt May"
+      ]
+    },
+    {
+      "id": "storm",
+      "name": "Storm",
+      "identity": "Ororo Munroe",
+      "universe": "Marvel",
+      "kind": "Hero",
+      "firstAppearance": "Giant-Size X-Men #1 (1975)",
+      "summary": "A weather manipulator and one of the X-Men’s defining leaders.",
+      "powers": [
+        "Weather control",
+        "Flight",
+        "Leadership"
+      ],
+      "connections": [
+        "X-Men",
+        "Kitty Pryde",
+        "Wakanda"
+      ],
+      "publisherUrl": "https://www.marvel.com/characters/storm",
+      "groupAffiliations": [
+        "X-Men",
+        "Kitty Pryde"
+      ]
+    },
+    {
+      "id": "batman",
+      "name": "Batman",
+      "identity": "Bruce Wayne",
+      "universe": "DC",
+      "kind": "Hero",
+      "firstAppearance": "Detective Comics #27 (1939)",
+      "summary": "Gotham’s detective protector, armed with preparation, discipline, and resolve.",
+      "powers": [
+        "Detective skills",
+        "Martial arts",
+        "Technology"
+      ],
+      "connections": [
+        "Alfred Pennyworth",
+        "Robin",
+        "Commissioner Gordon"
+      ],
+      "publisherUrl": "https://www.dc.com/characters/batman",
+      "groupAffiliations": [
+        "Alfred Pennyworth",
+        "Robin"
+      ]
+    },
+    {
+      "id": "wonder-woman",
+      "name": "Wonder Woman",
+      "identity": "Diana of Themyscira",
+      "universe": "DC",
+      "kind": "Hero",
+      "firstAppearance": "All Star Comics #8 (1941)",
+      "summary": "An Amazon warrior and ambassador for peace, compassion, and truth.",
+      "powers": [
+        "Super strength",
+        "Combat skill",
+        "Lasso of Truth"
+      ],
+      "connections": [
+        "Themyscira",
+        "Steve Trevor",
+        "Justice League"
+      ],
+      "publisherUrl": "https://www.dc.com/characters/wonder-woman",
+      "groupAffiliations": [
+        "Themyscira",
+        "Steve Trevor"
+      ]
+    },
+    {
+      "id": "invincible",
+      "name": "Invincible",
+      "identity": "Mark Grayson",
+      "universe": "Independent",
+      "kind": "Hero",
+      "firstAppearance": "Invincible #1 (2003)",
+      "summary": "A young hero figuring out what legacy means in a vast universe.",
+      "powers": [
+        "Flight",
+        "Super strength",
+        "Durability"
+      ],
+      "connections": [
+        "Atom Eve",
+        "William Clockwell",
+        "Guardians of the Globe"
+      ],
+      "publisherUrl": "https://imagecomics.com/comics/series/invincible",
+      "groupAffiliations": [
+        "Atom Eve",
+        "William Clockwell"
+      ]
+    },
+    {
+      "id": "hellboy",
+      "name": "Hellboy",
+      "identity": "Anung Un Rama",
+      "universe": "Independent",
+      "kind": "Hero",
+      "firstAppearance": "San Diego Comic-Con Comics #2 (1993)",
+      "summary": "A paranormal investigator with a stubbornly human heart.",
+      "powers": [
+        "Right Hand of Doom",
+        "Paranormal expertise",
+        "Durability"
+      ],
+      "connections": [
+        "B.P.R.D.",
+        "Abe Sapien",
+        "Liz Sherman"
+      ],
+      "publisherUrl": "https://www.darkhorse.com/Comics/91-435/Hellboy-Seed-of-Destruction-1",
+      "groupAffiliations": [
+        "B.P.R.D.",
+        "Abe Sapien"
+      ]
+    },
+    {
+      "universe": "DC",
+      "powers": [
+        "Unpredictability",
+        "Tactical planning",
+        "Customized weapons"
+      ],
+      "kind": "Villain",
+      "name": "The Joker",
+      "identity": "Unknown",
+      "id": "joker",
+      "summary": "Gotham chaos agent and enduring nemesis of Batman.",
+      "firstAppearance": "Batman #1 (1940)",
+      "connections": [
+        "Batman",
+        "Harley Quinn",
+        "Gotham City"
+      ],
+      "groupAffiliations": [
+        "Gotham underworld"
+      ],
+      "publisherUrl": "https://www.dc.com/characters/the-joker"
+    },
+    {
+      "universe": "Marvel",
+      "powers": [
+        "Super strength",
+        "Durability",
+        "Cosmic technology"
+      ],
+      "kind": "Villain",
+      "name": "Thanos",
+      "identity": "Thanos",
+      "id": "thanos",
+      "summary": "The Mad Titan pursues limitless power and threatens the wider Marvel Universe.",
+      "firstAppearance": "Iron Man #55 (1973)",
+      "connections": [
+        "Avengers",
+        "Adam Warlock",
+        "Black Order"
+      ],
+      "groupAffiliations": [
+        "Black Order"
+      ],
+      "publisherUrl": "https://www.marvel.com/characters/thanos/in-comics"
+    },
+    {
+      "name": "Superman",
+      "publisherUrl": "https://www.dc.com/characters/superman",
+      "id": "superman",
+      "powers": [
+        "Flight",
+        "Super strength",
+        "Heat vision"
+      ],
+      "connections": [
+        "Lois Lane",
+        "Supergirl",
+        "Justice League"
+      ],
+      "identity": "Clark Kent",
+      "summary": "The last survivor of Krypton, raised on Earth and guided by compassion and hope.",
+      "kind": "Hero",
+      "firstAppearance": "Action Comics #1 (1938)",
+      "universe": "DC",
+      "groupAffiliations": [
+        "Justice League",
+        "Super-Family"
+      ]
+    },
+    {
+      "name": "Black Panther",
+      "publisherUrl": "https://www.marvel.com/comics/discover/460/black-panther",
+      "id": "black-panther",
+      "powers": [
+        "Enhanced senses",
+        "Combat skill",
+        "Vibranium technology"
+      ],
+      "connections": [
+        "Wakanda",
+        "Avengers",
+        "Dora Milaje"
+      ],
+      "identity": "T Challa",
+      "summary": "Wakanda protector, combining leadership, skill, and advanced technology.",
+      "kind": "Hero",
+      "firstAppearance": "Fantastic Four #52 (1966)",
+      "universe": "Marvel",
+      "groupAffiliations": [
+        "Avengers",
+        "Wakanda"
+      ]
+    },
+    {
+      "name": "Captain America",
+      "publisherUrl": "https://www.marvel.com/characters/captain-america-steve-rogers",
+      "id": "captain-america",
+      "powers": [
+        "Enhanced physical ability",
+        "Tactical leadership",
+        "Shield mastery"
+      ],
+      "connections": [
+        "Avengers",
+        "Bucky Barnes",
+        "Sam Wilson"
+      ],
+      "identity": "Steve Rogers",
+      "summary": "A decorated super-soldier who stands for courage, service, and teamwork.",
+      "kind": "Hero",
+      "firstAppearance": "Captain America Comics #1 (1941)",
+      "universe": "Marvel",
+      "groupAffiliations": [
+        "Avengers"
+      ]
+    },
+    {
+      "name": "Spider-Man (Miles Morales)",
+      "publisherUrl": "https://www.marvel.com/characters/spider-man-miles-morales/in-comics/profile",
+      "id": "miles-morales",
+      "powers": [
+        "Wall-crawling",
+        "Venom blast",
+        "Camouflage"
+      ],
+      "connections": [
+        "Peter Parker",
+        "Spider-Verse",
+        "Gwen Stacy"
+      ],
+      "identity": "Miles Morales",
+      "summary": "A Brooklyn teenager who carries the Spider-Man legacy in his own way.",
+      "kind": "Hero",
+      "firstAppearance": "Ultimate Fallout #4 (2011)",
+      "universe": "Marvel",
+      "groupAffiliations": [
+        "Spider-Verse",
+        "Champions"
+      ]
+    },
+    {
+      "name": "The Flash",
+      "publisherUrl": "https://www.dc.com/characters/the-flash",
+      "id": "flash",
+      "powers": [
+        "Super speed",
+        "Time travel",
+        "Lightning control"
+      ],
+      "connections": [
+        "Justice League",
+        "Iris West",
+        "Reverse-Flash"
+      ],
+      "identity": "Barry Allen",
+      "summary": "A Central City hero whose connection to the Speed Force reaches across time and dimensions.",
+      "kind": "Hero",
+      "firstAppearance": "Flash Comics #1 (1940)",
+      "universe": "DC",
+      "groupAffiliations": [
+        "Justice League",
+        "Justice Society"
+      ]
+    },
+    {
+      "name": "Green Goblin",
+      "publisherUrl": "https://www.marvel.com/characters/green-goblin-norman-osborn/in-comics/profile",
+      "id": "green-goblin",
+      "powers": [
+        "Genius intellect",
+        "Goblin glider",
+        "Pumpkin bombs"
+      ],
+      "connections": [
+        "Spider-Man",
+        "Harry Osborn",
+        "Sinister Six"
+      ],
+      "identity": "Norman Osborn",
+      "summary": "A brilliant inventor and a personal adversary of Spider-Man.",
+      "kind": "Villain",
+      "firstAppearance": "The Amazing Spider-Man #14 (1964)",
+      "universe": "Marvel",
+      "groupAffiliations": [
+        "Sinister Six"
+      ]
+    },
+    {
+      "name": "Lex Luthor",
+      "publisherUrl": "https://www.dc.com/characters/lex-luthor",
+      "id": "lex-luthor",
+      "powers": [
+        "Genius intellect",
+        "Wealth",
+        "Powered armor"
+      ],
+      "connections": [
+        "Superman",
+        "Metropolis",
+        "Legion of Doom"
+      ],
+      "identity": "Lex Luthor",
+      "summary": "A brilliant industrialist whose ambition and rivalry make him a persistent threat to Superman.",
+      "kind": "Villain",
+      "firstAppearance": "Action Comics #23 (1940)",
+      "universe": "DC",
+      "groupAffiliations": [
+        "Legion of Doom"
+      ]
+    },
+    {
+      "name": "Darkseid",
+      "publisherUrl": "https://www.dc.com/characters/darkseid",
+      "id": "darkseid",
+      "powers": [
+        "Omega Beams",
+        "Immortality",
+        "Cosmic strength"
+      ],
+      "connections": [
+        "Apokolips",
+        "Justice League",
+        "New Gods"
+      ],
+      "identity": "Uxas",
+      "summary": "The ruler of Apokolips seeks absolute control across worlds and realities.",
+      "kind": "Villain",
+      "firstAppearance": "1970 (Jimmy Olsen #134)",
+      "universe": "DC",
+      "groupAffiliations": [
+        "Apokolips",
+        "Darkseid forces"
+      ]
+    }
+  ],
+  "comics": [
+    {
+      "id": "amazing-fantasy-15",
+      "title": "Amazing Fantasy #15",
+      "creators": "Stan Lee · Steve Ditko",
+      "universe": "Marvel",
+      "format": "Origin issue",
+      "description": "A landmark first appearance and compact origin story.",
+      "publisherUrl": "https://www.marvel.com/comics/issue/16926/amazing_fantasy_1962_15"
+    },
+    {
+      "id": "batman-year-one",
+      "title": "Batman: Year One",
+      "creators": "Frank Miller · David Mazzucchelli",
+      "universe": "DC",
+      "format": "Complete story",
+      "description": "A grounded beginning for Batman and Jim Gordon.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/batman-year-one"
+    },
+    {
+      "id": "all-star-superman",
+      "title": "All-Star Superman",
+      "creators": "Grant Morrison · Frank Quitely",
+      "universe": "DC",
+      "format": "Complete story",
+      "description": "A self-contained celebration of Superman.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/all-star-superman"
+    },
+    {
+      "id": "invincible-vol-1",
+      "title": "Invincible, Vol. 1: Family Matters",
+      "creators": "Robert Kirkman · Cory Walker",
+      "universe": "Independent",
+      "format": "Collected edition",
+      "description": "The start of a creator-owned superhero saga.",
+      "publisherUrl": "https://imagecomics.com/comics/releases/invincible-vol-1-family-matters-tp"
+    },
+    {
+      "id": "long-halloween",
+      "title": "Batman: The Long Halloween",
+      "creators": "Jeph Loeb · Tim Sale",
+      "universe": "DC",
+      "format": "Limited series",
+      "description": "A year of Gotham mysteries and evolving alliances.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/batman-the-long-halloween"
+    },
+    {
+      "publisherUrl": "https://www.marvel.com/comics/issue/9286/infinity-gauntlet-1991-1",
+      "creators": "Jim Starlin · George Pérez",
+      "format": "Event",
+      "id": "infinity-gauntlet",
+      "universe": "Marvel",
+      "description": "Thanos claims the Infinity Gauntlet and Earth heroes unite against him.",
+      "title": "The Infinity Gauntlet",
+      "year": 1991
+    },
+    {
+      "publisherUrl": "https://www.dc.com/graphic-novels/joker",
+      "creators": "Brian Azzarello · Lee Bermejo",
+      "format": "Graphic novel",
+      "id": "joker-graphic-novel",
+      "universe": "DC",
+      "description": "A standalone crime story centered on the most notorious villain in Gotham.",
+      "title": "Joker",
+      "year": 2008
+    },
+    {
+      "creators": "Jonathan Hickman · Esad Ribić",
+      "format": "Multiverse event",
+      "id": "secret-wars-2015",
+      "description": "A multiverse-spanning event that reshapes the Marvel Universe around Battleworld.",
+      "publisherUrl": "https://www.marvel.com/comics/series/19648/secret_wars_%282015_-_present%29",
+      "title": "Secret Wars",
+      "year": 2015,
+      "universe": "Marvel"
+    },
+    {
+      "creators": "Marv Wolfman · George Pérez",
+      "format": "Multiverse event",
+      "id": "crisis-infinite-earths",
+      "description": "Heroes from across time and alternate Earths unite against the Anti-Monitor.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/crisis-on-infinite-earths-1985/crisis-on-infinite-earths",
+      "title": "Crisis on Infinite Earths",
+      "year": 1985,
+      "universe": "DC"
+    },
+    {
+      "creators": "Geoff Johns · Andy Kubert",
+      "format": "Event",
+      "id": "flashpoint",
+      "description": "A changed past leaves Barry Allen in a dramatically altered reality.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/flashpoint-2011/flashpoint",
+      "title": "Flashpoint",
+      "year": 2011,
+      "universe": "DC"
+    },
+    {
+      "creators": "Mark Millar · Steve McNiven",
+      "format": "Event",
+      "id": "civil-war",
+      "description": "A conflict over superhero registration divides heroes and allies.",
+      "publisherUrl": "https://www.marvel.com/comics/series/1102/civil_war_2006",
+      "title": "Civil War",
+      "year": 2006,
+      "universe": "Marvel"
+    },
+    {
+      "creators": "Dan Slott · Olivier Coipel",
+      "format": "Multiverse event",
+      "id": "spider-verse",
+      "description": "Spider-heroes from across realities join forces against a threat to their kind.",
+      "publisherUrl": "https://www.marvel.com/comics/discover/1064/spider-verse",
+      "title": "Spider-Verse",
+      "year": 2014,
+      "universe": "Marvel"
+    },
+    {
+      "creators": "Frank Miller · Klaus Janson",
+      "format": "Complete story",
+      "id": "dark-knight-returns",
+      "description": "An older Bruce Wayne returns to Gotham in a separate future continuity.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/batman-the-dark-knight-returns",
+      "title": "The Dark Knight Returns",
+      "year": 1986,
+      "universe": "DC"
+    }
+  ],
+  "readingPaths": [
+    {
+      "id": "first-steps",
+      "title": "First steps",
+      "level": "Beginner",
+      "description": "Three approachable starting points across universes.",
+      "items": [
+        "Amazing Fantasy #15",
+        "Batman: Year One",
+        "Invincible, Vol. 1: Family Matters"
+      ]
+    },
+    {
+      "id": "gotham-detective",
+      "title": "Gotham: Year One onward",
+      "level": "Beginner",
+      "description": "Follow Batman from his early days into a city-wide mystery.",
+      "items": [
+        "Batman: Year One",
+        "Batman: The Long Halloween"
+      ]
+    },
+    {
+      "id": "self-contained",
+      "title": "One-and-done stories",
+      "level": "Easy entry",
+      "description": "Complete stories you can enjoy without a long reading list.",
+      "items": [
+        "Batman: Year One",
+        "All-Star Superman"
+      ]
+    }
+  ],
+  "adaptations": [
+    {
+      "id": "spider-screen",
+      "title": "Spider-Man across film",
+      "universe": "Marvel",
+      "medium": "Film",
+      "description": "Compare Peter Parker’s origins and supporting cast across screen versions.",
+      "publisherUrl": "https://www.marvel.com/movies"
+    },
+    {
+      "id": "batman-screen",
+      "title": "Batman on screen",
+      "universe": "DC",
+      "medium": "Film & series",
+      "description": "Explore different interpretations, from detective stories to Gotham adventures.",
+      "publisherUrl": "https://www.dc.com/movies"
+    },
+    {
+      "id": "invincible-screen",
+      "title": "Invincible: page to series",
+      "universe": "Independent",
+      "medium": "Animation",
+      "description": "See how a long-form comic saga becomes an animated adaptation.",
+      "publisherUrl": "https://imagecomics.com/comics/series/invincible"
+    }
+  ],
+  "movies": [
+    {
+      "genres": [
+        "Origin",
+        "Action"
+      ],
+      "title": "Spider-Man",
+      "year": 2002,
+      "publisherUrl": "https://www.marvel.com/movies/Spider-Man",
+      "relatedComicId": "amazing-fantasy-15",
+      "characters": [
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "summary": "Peter Parker becomes Spider-Man and faces the Green Goblin.",
+      "cast": [
+        "Tobey Maguire",
+        "Kirsten Dunst",
+        "Willem Dafoe"
+      ],
+      "id": "spider-man-2002",
+      "continuity": "Raimi films",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Adventure",
+        "Action"
+      ],
+      "title": "Spider-Man: Far From Home",
+      "year": 2019,
+      "publisherUrl": "https://www.marvel.com/movies/spider-man-far-from-home",
+      "relatedComicId": "amazing-fantasy-15",
+      "characters": [
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "summary": "Peter Parker travels abroad while new threats reshape his world.",
+      "cast": [
+        "Tom Holland",
+        "Samuel L. Jackson",
+        "Zendaya"
+      ],
+      "id": "spider-man-far-from-home",
+      "continuity": "Marvel Cinematic Universe",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Science fiction",
+        "Adventure"
+      ],
+      "title": "Ant-Man and The Wasp: Quantumania",
+      "year": 2023,
+      "publisherUrl": "https://www.marvel.com/antman",
+      "characters": [],
+      "universe": "Marvel",
+      "summary": "Scott Lang and Hope van Dyne return for a journey into the Quantum Realm.",
+      "cast": [
+        "Paul Rudd",
+        "Evangeline Lilly",
+        "Jonathan Majors"
+      ],
+      "id": "ant-man-quantumania",
+      "continuity": "Marvel Cinematic Universe",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Origin",
+        "Adventure"
+      ],
+      "title": "Wonder Woman",
+      "year": 2017,
+      "publisherUrl": "https://www.dc.com/movies/wonder-woman-2017",
+      "characters": [
+        "wonder-woman"
+      ],
+      "universe": "DC",
+      "summary": "Diana leaves Themyscira and discovers her role in a world at war.",
+      "cast": [
+        "Gal Gadot",
+        "Chris Pine"
+      ],
+      "id": "wonder-woman-2017",
+      "continuity": "DC films",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Team-up",
+        "Action"
+      ],
+      "title": "Justice League",
+      "year": 2017,
+      "publisherUrl": "https://www.dc.com/movies/justice-league-2017",
+      "characters": [
+        "batman",
+        "wonder-woman"
+      ],
+      "universe": "DC",
+      "summary": "Batman and Wonder Woman assemble heroes to face a threat to Earth.",
+      "cast": [
+        "Ben Affleck",
+        "Gal Gadot",
+        "Jason Momoa"
+      ],
+      "id": "justice-league-2017",
+      "continuity": "DC films",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Adventure",
+        "Action"
+      ],
+      "title": "Superman",
+      "year": 2025,
+      "publisherUrl": "https://www.dc.com/movies/superman-2025",
+      "characters": [],
+      "universe": "DC",
+      "summary": "A DC Universe feature centered on Superman and his belief in humanity.",
+      "cast": [
+        "David Corenswet",
+        "Rachel Brosnahan",
+        "Nicholas Hoult"
+      ],
+      "id": "superman-2025",
+      "continuity": "DC Universe",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Drama",
+        "Crime"
+      ],
+      "title": "Joker",
+      "year": 2019,
+      "publisherUrl": "https://www.dc.com/movies/joker-2019",
+      "relatedComicId": "joker-graphic-novel",
+      "characters": [
+        "joker"
+      ],
+      "universe": "DC",
+      "summary": "A standalone character study following Arthur Fleck in Gotham.",
+      "cast": [
+        "Joaquin Phoenix",
+        "Robert De Niro",
+        "Zazie Beetz"
+      ],
+      "id": "joker-2019",
+      "continuity": "Standalone",
+      "medium": "Film"
+    },
+    {
+      "genres": [
+        "Animation",
+        "Action"
+      ],
+      "title": "Invincible · Season 1",
+      "year": 2021,
+      "publisherUrl": "https://www.primevideo.com/detail/0K677J96WQ96K6UY6BL15O70CO",
+      "relatedComicId": "invincible-vol-1",
+      "characters": [
+        "invincible"
+      ],
+      "universe": "Independent",
+      "summary": "Mark Grayson discovers powers and a family legacy more complicated than expected.",
+      "cast": [
+        "Steven Yeun",
+        "Sandra Oh",
+        "J.K. Simmons"
+      ],
+      "id": "invincible-season-1",
+      "continuity": "Animated series",
+      "medium": "Series"
+    },
+    {
+      "title": "Avengers: Infinity War",
+      "publisherUrl": "https://www.marvel.com/movies/avengers-infinity-war",
+      "cast": [
+        "Robert Downey Jr.",
+        "Chris Hemsworth",
+        "Josh Brolin"
+      ],
+      "year": 2018,
+      "continuity": "Marvel Cinematic Universe",
+      "medium": "Film",
+      "id": "avengers-infinity-war",
+      "characters": [
+        "thanos",
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "summary": "The Avengers and their allies face Thanos as he seeks the Infinity Stones.",
+      "genres": [
+        "Team-up",
+        "Cosmic"
+      ],
+      "relatedComicId": "infinity-gauntlet"
+    },
+    {
+      "title": "Avengers: Endgame",
+      "publisherUrl": "https://www.marvel.com/movies/avengers-endgame",
+      "cast": [
+        "Robert Downey Jr.",
+        "Chris Evans",
+        "Mark Ruffalo"
+      ],
+      "year": 2019,
+      "continuity": "Marvel Cinematic Universe",
+      "medium": "Film",
+      "id": "avengers-endgame",
+      "characters": [
+        "thanos",
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "summary": "The remaining Avengers take a final stand after the universe-shaking events caused by Thanos.",
+      "genres": [
+        "Team-up",
+        "Adventure"
+      ],
+      "relatedComicId": "infinity-gauntlet"
+    },
+    {
+      "title": "Batman: Year One",
+      "publisherUrl": "https://www.dc.com/movies/batman-year-one-2011",
+      "cast": [
+        "Bryan Cranston",
+        "Ben McKenzie",
+        "Eliza Dushku"
+      ],
+      "year": 2011,
+      "continuity": "DC animated film",
+      "medium": "Film",
+      "id": "batman-year-one-2011",
+      "characters": [
+        "batman",
+        "joker"
+      ],
+      "universe": "DC",
+      "summary": "An animated adaptation of the graphic novel follows Bruce Wayne as he begins his life as Batman.",
+      "genres": [
+        "Animation",
+        "Origin"
+      ],
+      "relatedComicId": "batman-year-one"
+    }
+  ],
+  "storylines": [
+    {
+      "screenIds": [
+        "spider-man-2002",
+        "spider-man-far-from-home"
+      ],
+      "title": "Spider-Man: the origin",
+      "year": 1962,
+      "type": "Character origin",
+      "description": "A compact origin introduces Peter Parker and the responsibility that shapes his life as Spider-Man.",
+      "characters": [
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "difficulty": "Beginner",
+      "readingOrder": [
+        "Amazing Fantasy #15"
+      ],
+      "id": "spider-origin"
+    },
+    {
+      "screenIds": [
+        "batman-year-one-2011"
+      ],
+      "title": "Batman: Year One",
+      "year": 1987,
+      "type": "Character origin",
+      "description": "A grounded first year for Bruce Wayne and Jim Gordon in Gotham.",
+      "characters": [
+        "batman",
+        "joker"
+      ],
+      "universe": "DC",
+      "difficulty": "Beginner",
+      "readingOrder": [
+        "Batman: Year One"
+      ],
+      "id": "batman-year-one"
+    },
+    {
+      "screenIds": [
+        "avengers-infinity-war",
+        "avengers-endgame"
+      ],
+      "title": "The Infinity Gauntlet",
+      "year": 1991,
+      "type": "Cosmic event",
+      "description": "Thanos obtains near-omnipotent power, drawing Marvel heroes into a cosmic conflict.",
+      "characters": [
+        "thanos",
+        "spider-man"
+      ],
+      "universe": "Marvel",
+      "difficulty": "Intermediate",
+      "readingOrder": [
+        "The Infinity Gauntlet #1–6"
+      ],
+      "id": "infinity-gauntlet-event"
+    },
+    {
+      "screenIds": [
+        "invincible-season-1"
+      ],
+      "title": "Invincible: Family Matters",
+      "year": 2003,
+      "type": "Series opening",
+      "description": "Mark Grayson begins life as a hero and learns that family legacies can be complicated.",
+      "characters": [
+        "invincible"
+      ],
+      "universe": "Independent",
+      "difficulty": "Beginner",
+      "readingOrder": [
+        "Invincible, Vol. 1: Family Matters"
+      ],
+      "id": "invincible-family"
+    }
+  ],
+  "events": [
+    {
+      "storylineId": "infinity-gauntlet-event",
+      "type": "Cosmic event",
+      "year": 1991,
+      "comicIds": [
+        "infinity-gauntlet"
+      ],
+      "universe": "Marvel",
+      "id": "infinity-gauntlet-event",
+      "title": "The Infinity Gauntlet",
+      "participants": [
+        "thanos",
+        "captain-america",
+        "black-panther",
+        "spider-man"
+      ],
+      "summary": "Thanos claims the Infinity Gauntlet and heroes across the Marvel Universe unite against him.",
+      "publisherUrl": "https://www.marvel.com/comics/issue/9286/infinity-gauntlet-1991-1"
+    },
+    {
+      "storylineId": "secret-wars",
+      "type": "Multiverse event",
+      "year": 2015,
+      "comicIds": [
+        "secret-wars-2015"
+      ],
+      "universe": "Marvel",
+      "id": "secret-wars-event",
+      "title": "Secret Wars",
+      "participants": [
+        "spider-man",
+        "miles-morales",
+        "black-panther"
+      ],
+      "summary": "The Marvel multiverse collapses into Battleworld, changing the shape of reality.",
+      "publisherUrl": "https://www.marvel.com/comics/series/19648/secret_wars_%282015_-_present%29"
+    },
+    {
+      "storylineId": "crisis-event",
+      "type": "Multiverse event",
+      "year": 1985,
+      "comicIds": [
+        "crisis-infinite-earths"
+      ],
+      "universe": "DC",
+      "id": "crisis-event",
+      "title": "Crisis on Infinite Earths",
+      "participants": [
+        "superman",
+        "batman",
+        "wonder-woman",
+        "flash"
+      ],
+      "summary": "A coalition of heroes from across Earths confronts the Anti-Monitor.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/crisis-on-infinite-earths-1985/crisis-on-infinite-earths"
+    },
+    {
+      "storylineId": "flashpoint",
+      "type": "Timeline event",
+      "year": 2011,
+      "comicIds": [
+        "flashpoint"
+      ],
+      "universe": "DC",
+      "id": "flashpoint-event",
+      "title": "Flashpoint",
+      "participants": [
+        "flash",
+        "batman",
+        "superman"
+      ],
+      "summary": "Barry Allen wakes in an altered timeline and seeks to understand what changed.",
+      "publisherUrl": "https://www.dc.com/graphic-novels/flashpoint-2011/flashpoint"
+    },
+    {
+      "storylineId": "civil-war",
+      "type": "Hero conflict",
+      "year": 2006,
+      "comicIds": [
+        "civil-war"
+      ],
+      "universe": "Marvel",
+      "id": "civil-war-event",
+      "title": "Civil War",
+      "participants": [
+        "captain-america",
+        "spider-man",
+        "black-panther"
+      ],
+      "summary": "A superhero registration debate divides former allies across the Marvel Universe.",
+      "publisherUrl": "https://www.marvel.com/comics/series/1102/civil_war_2006"
+    },
+    {
+      "storylineId": "spider-verse",
+      "type": "Multiverse event",
+      "year": 2014,
+      "comicIds": [
+        "spider-verse"
+      ],
+      "universe": "Marvel",
+      "id": "spider-verse-event",
+      "title": "Spider-Verse",
+      "participants": [
+        "spider-man",
+        "miles-morales"
+      ],
+      "summary": "Spider-heroes from multiple realities unite against a shared threat.",
+      "publisherUrl": "https://www.marvel.com/comics/discover/1064/spider-verse"
+    }
+  ],
+  "teams": [
+    {
+      "publisherUrl": "https://www.marvel.com/teams-and-groups/avengers/in-comics",
+      "summary": "A flexible team of heroes assembled to meet threats beyond one individual.",
+      "id": "avengers",
+      "name": "Avengers",
+      "kind": "Hero team",
+      "base": "Earth",
+      "members": [
+        "spider-man",
+        "captain-america",
+        "black-panther",
+        "storm"
+      ],
+      "universe": "Marvel"
+    },
+    {
+      "publisherUrl": "https://www.marvel.com/teams-and-groups/x-men",
+      "summary": "Mutant heroes who defend a world that often fears and misunderstands them.",
+      "id": "x-men",
+      "name": "X-Men",
+      "kind": "Mutant team",
+      "base": "Xavier School",
+      "members": [
+        "storm"
+      ],
+      "universe": "Marvel"
+    },
+    {
+      "publisherUrl": "https://www.dc.com/characters/justice-league",
+      "summary": "A coalition of DC heroes protecting Earth from global and cosmic threats.",
+      "id": "justice-league",
+      "name": "Justice League",
+      "kind": "Hero team",
+      "base": "Watchtower",
+      "members": [
+        "batman",
+        "superman",
+        "wonder-woman",
+        "flash"
+      ],
+      "universe": "DC"
+    },
+    {
+      "publisherUrl": "https://www.marvel.com/characters/thanos/in-comics",
+      "summary": "A powerful group of agents serving Thanos.",
+      "id": "black-order",
+      "name": "Black Order",
+      "kind": "Villain team",
+      "base": "Across the cosmos",
+      "members": [
+        "thanos"
+      ],
+      "universe": "Marvel"
+    },
+    {
+      "publisherUrl": "https://www.dc.com/characters/the-joker",
+      "summary": "A loose collection of criminals and adversaries operating in Gotham City.",
+      "id": "gotham-rogues",
+      "name": "Gotham rogues",
+      "kind": "Villain network",
+      "base": "Gotham City",
+      "members": [
+        "joker"
+      ],
+      "universe": "DC"
+    },
+    {
+      "publisherUrl": "https://www.marvel.com/characters/green-goblin-norman-osborn/in-comics/profile",
+      "summary": "A recurring alliance of Spider-Man adversaries.",
+      "id": "sinister-six",
+      "name": "Sinister Six",
+      "kind": "Villain team",
+      "base": "New York",
+      "members": [
+        "green-goblin"
+      ],
+      "universe": "Marvel"
+    },
+    {
+      "publisherUrl": "https://imagecomics.com/comics/series/invincible",
+      "summary": "A prominent superhero team in the Invincible universe.",
+      "id": "guardians-globe",
+      "name": "Guardians of the Globe",
+      "kind": "Hero team",
+      "base": "Earth",
+      "members": [
+        "invincible"
+      ],
+      "universe": "Independent"
+    },
+    {
+      "publisherUrl": "https://www.marvel.com/comics/discover/1064/spider-verse",
+      "summary": "Spider-powered heroes from many realities, connected by a shared legacy.",
+      "id": "spider-heroes",
+      "name": "Spider-heroes",
+      "kind": "Multiverse network",
+      "base": "Across the multiverse",
+      "members": [
+        "spider-man",
+        "miles-morales"
+      ],
+      "universe": "Marvel"
+    }
+  ],
+  "worlds": [
+    {
+      "keyEvents": [
+        "infinity-gauntlet-event",
+        "civil-war-event",
+        "secret-wars-event"
+      ],
+      "featuredCharacters": [
+        "spider-man",
+        "storm",
+        "captain-america",
+        "black-panther",
+        "thanos"
+      ],
+      "name": "Earth-616",
+      "universe": "Marvel",
+      "id": "earth-616",
+      "continuity": "Core comics",
+      "summary": "The primary Marvel Comics setting for many ongoing character and team stories.",
+      "publisherUrl": "https://www.marvel.com/",
+      "featuredTeams": [
+        "avengers",
+        "x-men",
+        "black-order"
+      ]
+    },
+    {
+      "keyEvents": [
+        "secret-wars-event",
+        "spider-verse-event"
+      ],
+      "featuredCharacters": [
+        "miles-morales",
+        "spider-man"
+      ],
+      "name": "Ultimate Universe",
+      "universe": "Marvel",
+      "id": "earth-1610",
+      "continuity": "Alternate Earth",
+      "summary": "An alternate Marvel setting that introduced a different generation and history for familiar heroes.",
+      "publisherUrl": "https://www.marvel.com/comics",
+      "featuredTeams": [
+        "spider-heroes"
+      ]
+    },
+    {
+      "keyEvents": [
+        "crisis-event",
+        "flashpoint-event"
+      ],
+      "featuredCharacters": [
+        "batman",
+        "superman",
+        "wonder-woman",
+        "flash",
+        "joker",
+        "lex-luthor"
+      ],
+      "name": "Earth-0 / Prime Earth",
+      "universe": "DC",
+      "id": "earth-0",
+      "continuity": "Core comics",
+      "summary": "The central DC setting for many modern hero, team, and event stories.",
+      "publisherUrl": "https://www.dc.com/comics",
+      "featuredTeams": [
+        "justice-league",
+        "gotham-rogues"
+      ]
+    },
+    {
+      "keyEvents": [],
+      "featuredCharacters": [
+        "batman",
+        "superman",
+        "joker"
+      ],
+      "name": "Elseworlds",
+      "universe": "DC",
+      "id": "dc-elseworlds",
+      "continuity": "Standalone worlds",
+      "summary": "Standalone DC stories that explore alternate histories, futures, and imagined settings.",
+      "publisherUrl": "https://www.dc.com/comics",
+      "featuredTeams": []
+    },
+    {
+      "keyEvents": [
+        "invincible-family"
+      ],
+      "featuredCharacters": [
+        "invincible"
+      ],
+      "name": "Invincible Universe",
+      "universe": "Independent",
+      "id": "invincible-universe",
+      "continuity": "Image Comics",
+      "summary": "A creator-owned superhero setting following Mark Grayson and a wide cast of heroes.",
+      "publisherUrl": "https://imagecomics.com/comics/series/invincible",
+      "featuredTeams": [
+        "guardians-globe"
+      ]
+    }
+  ]
 }

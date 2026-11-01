@@ -1,28 +1,36 @@
-# Panelverse
+# PanelVerse 2.1
 
-Panelverse is a full-stack superhero comics and universe explorer. It brings character profiles, curated comic recommendations, beginner reading paths, screen adaptation notes, a personal saved shelf, and a lightweight story guide into one responsive app.
+PanelVerse is a full-stack superhero comics and universe explorer. It brings character profiles, a curated comic catalogue, reading paths, teams, worlds, storylines, events, a personal saved shelf, reading progress and public-source comic discovery into one responsive app.
 
 ## Run locally
 
-Requirements: Node.js 20 or newer. The app uses Node's built-in modules and has no runtime package dependencies.
+Requirements: Node.js 20 or newer and a reachable Neon/PostgreSQL database. The server reads its private configuration from `.env`; never commit or share that file.
 
-```bash
+1. Copy `.env.example` to `.env`.
+2. Set `DATABASE_URL` to your own PostgreSQL connection string and set `SESSION_SECRET` to a random value of at least 32 characters.
+3. Install dependencies and check the JavaScript syntax.
+
+```powershell
+npm install
+npm run check
 npm start
 ```
 
-Open http://localhost:3000. For automatic server restarts while editing, run `npm run dev`.
+Open http://localhost:3000. For automatic server restarts while editing, run `npm run dev`. The server creates its PostgreSQL tables and seeds missing catalogue collections on first initialization.
 
 ## Stack
 
-- Frontend: semantic HTML, responsive CSS, browser JavaScript.
+- Frontend: semantic HTML, responsive CSS, vanilla browser JavaScript and an installable PWA shell.
 - Backend: Node.js HTTP server and JSON REST API.
-- Persistence: `data/db.json` stores the catalog and local reader shelf.
+- Persistence: Neon/PostgreSQL for accounts, catalogue collections, saved shelves and reading progress.
+- Authentication: bcrypt password hashes and signed HttpOnly session cookies.
 
 ## API
 
 | Method | Route | Description |
 | --- | --- | --- |
 | GET | `/api/health` | Service status |
+| GET | `/api/discover/comics?q=&type=` | Search the local catalogue plus public Wikipedia and Wikidata references for comic books and superhero characters |
 | GET | `/api/characters?q=&universe=` | Character directory and search |
 | GET | `/api/comics?q=&universe=` | Curated comic catalog |
 | GET | `/api/reading-paths` | Beginner-friendly reading sequences |
@@ -32,20 +40,32 @@ Open http://localhost:3000. For automatic server restarts while editing, run `np
 | GET | `/api/events` | Crossover events and timelines |
 | GET | `/api/teams` | Teams and factions |
 | GET | `/api/worlds` | Universes and alternate continuities |
-| GET | `/api/shelf` | Local reader's saved entries |
+| GET | `/api/shelf` | Signed-in user's saved entries |
 | POST | `/api/shelf` | Save characters, comics, screen titles, teams, worlds, or events |
 | DELETE | `/api/shelf` | Remove a saved entry |
 | POST | `/api/guide` | Curated guide response for a question |
 
-Shelf writes persist in `data/db.json`. The default shelf owner is `local`. The guide is a scripted demo, not a hosted AI service. The API currently runs as a single-user local app; authentication and multi-user hosting are planned extension points.
+Saved shelves and reading progress persist in PostgreSQL and are scoped to the signed-in account. The guide is a scripted demo, not a hosted AI service.
 
-## Next full-stack milestones
+## Next development milestones
 
-1. Replace the local JSON store with PostgreSQL and migrations.
-2. Add accounts, sessions, and per-user reading progress.
-3. Add an admin catalog editor with validation and audit history.
-4. Expand transparent recommendations and licensed-service availability data.
-5. Deploy the web client and API with environment-based configuration.
+1. Add an admin catalogue editor with validation and audit history.
+2. Add richer publisher-specific issue and creator metadata where permitted API access is available.
+3. Add optional model-backed comic Q&A with server-side credentials and source citations.
+4. Add operational monitoring, backup automation, email verification and password recovery before wider public launch.
+5. Package the existing PWA for native mobile and desktop distribution if store installers are needed.
+
+## Live comic and superhero discovery (2.1)
+
+The Live comic search page combines matching entries from the existing Neon-backed PanelVerse catalogue with public search results from Wikipedia and Wikidata. Choose all entries, heroes and villains, or comics and graphic novels. Every external result includes a link to its source page; PanelVerse does not host full comic books or claim to provide an exhaustive index.
+
+- Public endpoint: `GET /api/discover/comics?q=Batman&type=all` (`type` can be `all`, `characters`, or `comics`).
+- No third-party API key is required for the Wikimedia sources.
+- The server caches successful searches for eight minutes, limits request rates, makes at most two upstream requests per cache miss, and uses a descriptive User-Agent.
+- Wikipedia and Wikidata can rate-limit or change results; the local catalogue remains available when external sources are temporarily unavailable.
+- The frontend only displays Wikimedia-hosted thumbnails from `upload.wikimedia.org`; source links are shown so readers can check context and applicable licensing.
+
+The existing scripted PanelVerse Guide remains a curated demo, not a hosted generative-AI assistant. A true AI Q&A feature needs a configured model provider and server-side API credentials.
 
 ## Content and rights
 
@@ -67,11 +87,11 @@ The comics library now supports a personal reading tracker. Add a comic to your 
 
 ## Reading progress API
 
-- GET /api/progress retrieves the local reading tracker.
+- GET /api/progress retrieves the signed-in reader's tracker.
 - POST /api/progress creates or updates a comic status and completion percentage.
 - DELETE /api/progress removes a comic from the tracker.
 
-The overview now includes active reads. In Comics Library, choose **Track reading** to add a title; its button cycles through reading states. In My Shelf, use the status menu and slider to set its state and completion percentage. Reading records are written atomically to the JSON store.
+The overview now includes active reads. In Comics Library, choose **Track reading** to add a title; its button cycles through reading states. In My Shelf, use the status menu and slider to set its state and completion percentage. Reading records are stored in PostgreSQL and belong to the signed-in account.
 
 
 
@@ -97,9 +117,9 @@ The starter catalog connects 16 characters, 13 comics, 11 screen titles, 4 story
 
 
 
-## Reader profiles and portability
+## Reader account and portability
 
-Create separate local reader profiles from My Shelf to keep saved characters, screen watchlists, comics, and reading progress apart on one device. Export produces a versioned JSON backup; importing merges supported items into the selected profile. Move the backup file to another Panelverse installation to carry a library across devices. Profiles are local organization, not password-protected online accounts or cloud sync.
+The current hosted version uses the signed-in account as the reader profile. Export produces a versioned JSON backup of saved entries and reading progress; importing merges supported items into the account. The `/api/profiles` endpoint keeps the single-profile interface compatible with the existing frontend.
 
 - `GET /api/profiles` lists local profiles.
 - `POST /api/profiles` creates a local profile.
