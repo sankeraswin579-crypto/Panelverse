@@ -4,3 +4,11 @@ node_modules/
 !.env.example
 .DS_Store
 npm-debug.log*
+# PanelVerse Android signing credentials
+/panelverse-android/*.keystore
+/panelverse-android/*.jks
+/panelverse-android/keystore.properties
+/panelverse-android/*.p12
+/panelverse-android/*.pfx
+
+/panelverse-android/*.keystore
