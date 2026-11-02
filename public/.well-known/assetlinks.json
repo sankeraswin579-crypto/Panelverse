@@ -1,14 +1,8 @@
-[
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "com.onrender.panelverse_dhu0.twa",
-      "sha256_cert_fingerprints": [
-        "E9:0E:FF:BC:8E:B4:4E:1E:C3:F4:41:96:6A:23:84:47:7E:E9:7B:93:BF:CC:4A:EF:00:A6:4A:E5:51:91:54:AC"
-      ]
-    }
-  }
-]
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.panelverse_dhu0.twa",
+        "sha256_cert_fingerprints": ["E9:0E:FF:BC:8E:BA:D4:E1:EC:3F:44:19:66:A2:38:44:7E:EE:7B:93:BF:CC:4A:EF:00:A6:4A:E5:51:91:5A:4C"]
+      }
+    }]
