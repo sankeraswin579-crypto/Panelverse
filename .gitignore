@@ -12,3 +12,21 @@ npm-debug.log*
 /panelverse-android/*.pfx
 
 /panelverse-android/*.keystore
+
+# PanelVerse Android local files and secrets
+/panelverse-android/.gradle/
+/panelverse-android/**/build/
+/panelverse-android/local.properties
+/panelverse-android/keystore.properties
+/panelverse-android/*.keystore
+/panelverse-android/**/*.keystore
+/panelverse-android/release-backup/
+/panelverse-android/*.aab
+/panelverse-android/*.apk
+/panelverse-android/*.idsig
+
+
+# Android generated reports and local backup files
+/panelverse-android/build/
+/panelverse-android/manifest-checksum.txt
+/panelverse-android/twa-manifest.json.bak
