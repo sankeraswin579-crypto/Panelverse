@@ -1,129 +1,435 @@
-# PanelVerse 2.1
+# 🦸 PanelVerse 2.1
+### Explore Heroes. Discover Universes. Track Your Reading.
 
-PanelVerse is a full-stack superhero comics and universe explorer. It brings character profiles, a curated comic catalogue, reading paths, teams, worlds, storylines, events, a personal saved shelf, reading progress and public-source comic discovery into one responsive app.
+PanelVerse is a full-stack superhero comics and universe exploration platform that brings character profiles, comic collections, reading paths, teams, alternate worlds, storylines, crossover events and screen adaptations together in one responsive application.
 
-## Run locally
+Discover comic universes, explore connected characters, organize your personal reading shelf and track your reading journey.
 
-Requirements: Node.js 20 or newer and a reachable Neon/PostgreSQL database. The server reads its private configuration from `.env`; never commit or share that file.
+---
 
-1. Copy `.env.example` to `.env`.
-2. Set `DATABASE_URL` to your own PostgreSQL connection string and set `SESSION_SECRET` to a random value of at least 32 characters.
-3. Install dependencies and check the JavaScript syntax.
+## ✨ Features
+
+### 📚 Comic Discovery
+- Curated superhero comics catalogue.
+- Search and filter comics by universe.
+- Live comic discovery using Wikipedia and Wikidata.
+- External source links for discovered content.
+- Character and comic discovery filters.
+
+### 🦸 Character Universe
+- Detailed superhero and villain profiles.
+- Character affiliations and connections.
+- Hero and villain classification.
+- Character comparison for powers, origins and affiliations.
+
+### 🌌 Universe Explorer
+- Marvel and DC universe collections.
+- Alternate continuities and worlds.
+- Teams and factions.
+- Crossover events and timelines.
+- Connected character and storyline relationships.
+
+### 📖 Reading Experience
+- Beginner-friendly reading paths.
+- Personalized comic recommendations.
+- Want to Read, Reading and Completed statuses.
+- Reading completion percentage.
+- Active reading overview.
+- Personal saved shelf.
+
+### 🎬 Movies & Series
+- Comic-to-screen adaptations.
+- Movies and animated series catalogue.
+- Release years, genres and continuity.
+- Character and comic connections.
+- Personal watchlist support.
+
+### 👤 Reader Accounts
+- Account registration and authentication.
+- bcrypt password hashing.
+- Signed HttpOnly session cookies.
+- Account-specific saved collections.
+- Persistent reading progress.
+- JSON backup and restore functionality.
+
+### 🔎 Live Comic Discovery
+Search public comic and superhero references using:
+- Wikipedia
+- Wikidata
+
+The application combines external discovery results with its existing local catalogue. External entries link to their original source pages.
+
+### 📱 Progressive Web App
+- Responsive desktop and mobile interface.
+- Installable PWA.
+- Offline application shell after first visit.
+- Browser-based installation.
+- API-dependent features require connectivity.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Backend | Node.js |
+| Database | Neon PostgreSQL |
+| API | REST API |
+| Authentication | bcrypt, HttpOnly Cookies |
+| External Discovery | Wikipedia, Wikidata |
+| Application Type | Progressive Web App |
+| Deployment | Render |
+| Database Hosting | Neon PostgreSQL |
+| Version Control | Git & GitHub |
+
+---
+
+## 🏗️ Application Architecture
+
+```text
+                 PANELVERSE 2.1
+                       |
+             Responsive Frontend
+                       |
+             Node.js HTTP Server
+                       |
+                  REST API
+                       |
+          +------------+------------+
+          |            |            |
+      Authentication  Catalogue   Discovery
+          |            |            |
+          +------------+------------+
+                       |
+                PostgreSQL
+                       |
+          +------------+------------+
+          |            |            |
+        Users       My Shelf     Progress
+          |
+       Backups
+```
+
+---
+
+## 🚀 Run Locally
+
+### Requirements
+
+- Node.js 20 or newer
+- npm
+- Neon PostgreSQL or another reachable PostgreSQL database
+- Git
+
+### 1. Clone the repository
+
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd panelverse
+```
+
+### 2. Configure environment variables
+
+Copy `.env.example` to `.env`.
 
 ```powershell
+Copy-Item .env.example .env
+```
+
+Configure your environment:
+
+```env
+DATABASE_URL=your_postgresql_connection_string
+SESSION_SECRET=your_random_secret_of_at_least_32_characters
+PORT=3000
+```
+
+Never commit `.env` or expose database credentials and session secrets.
+
+### 3. Install dependencies
+
+```bash
 npm install
+```
+
+### 4. Check JavaScript syntax
+
+```bash
 npm run check
+```
+
+### 5. Start the application
+
+```bash
 npm start
 ```
 
-Open http://localhost:3000. For automatic server restarts while editing, run `npm run dev`. The server creates its PostgreSQL tables and seeds missing catalogue collections on first initialization.
+Open:
 
-## Stack
+http://localhost:3000
 
-- Frontend: semantic HTML, responsive CSS, vanilla browser JavaScript and an installable PWA shell.
-- Backend: Node.js HTTP server and JSON REST API.
-- Persistence: Neon/PostgreSQL for accounts, catalogue collections, saved shelves and reading progress.
-- Authentication: bcrypt password hashes and signed HttpOnly session cookies.
+For development with automatic server restarts:
 
-## API
+```bash
+npm run dev
+```
 
-| Method | Route | Description |
-| --- | --- | --- |
-| GET | `/api/health` | Service status |
-| GET | `/api/discover/comics?q=&type=` | Search the local catalogue plus public Wikipedia and Wikidata references for comic books and superhero characters |
-| GET | `/api/characters?q=&universe=` | Character directory and search |
-| GET | `/api/comics?q=&universe=` | Curated comic catalog |
-| GET | `/api/reading-paths` | Beginner-friendly reading sequences |
-| GET | `/api/adaptations?q=` | Comic-to-screen connections |
-| GET | `/api/movies?q=&universe=` | Movies and series catalog |
-| GET | `/api/storylines` | Character and event story arcs |
-| GET | `/api/events` | Crossover events and timelines |
+The server initializes its PostgreSQL tables and seeds missing catalogue collections during first initialization.
+
+---
+
+## 🔌 REST API Documentation
+
+### System
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Service health status |
+
+### Discovery and Catalogue
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/discover/comics` | Public comic discovery |
+| GET | `/api/characters` | Character directory |
+| GET | `/api/comics` | Comic catalogue |
+| GET | `/api/reading-paths` | Reading sequences |
+| GET | `/api/adaptations` | Comic adaptations |
+| GET | `/api/movies` | Movies and series |
+| GET | `/api/storylines` | Storyline explorer |
+| GET | `/api/events` | Crossover events |
 | GET | `/api/teams` | Teams and factions |
-| GET | `/api/worlds` | Universes and alternate continuities |
-| GET | `/api/shelf` | Signed-in user's saved entries |
-| POST | `/api/shelf` | Save characters, comics, screen titles, teams, worlds, or events |
+| GET | `/api/worlds` | Universes and continuities |
+
+### Reader Features
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/shelf` | Retrieve saved entries |
+| POST | `/api/shelf` | Save an entry |
 | DELETE | `/api/shelf` | Remove a saved entry |
-| POST | `/api/guide` | Curated guide response for a question |
+| GET | `/api/progress` | Retrieve reading progress |
+| POST | `/api/progress` | Create or update progress |
+| DELETE | `/api/progress` | Remove reading progress |
+| POST | `/api/guide` | Curated guide response |
 
-Saved shelves and reading progress persist in PostgreSQL and are scoped to the signed-in account. The guide is a scripted demo, not a hosted AI service.
+### Profiles and Backups
 
-## Next development milestones
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/profiles` | List local profiles |
+| POST | `/api/profiles` | Create a local profile |
+| GET | `/api/backup` | Export profile backup |
+| POST | `/api/backup` | Import and merge backup |
 
-1. Add an admin catalogue editor with validation and audit history.
-2. Add richer publisher-specific issue and creator metadata where permitted API access is available.
-3. Add optional model-backed comic Q&A with server-side credentials and source citations.
-4. Add operational monitoring, backup automation, email verification and password recovery before wider public launch.
-5. Package the existing PWA for native mobile and desktop distribution if store installers are needed.
+---
 
-## Live comic and superhero discovery (2.1)
+## 🔍 Live Discovery API
 
-The Live comic search page combines matching entries from the existing Neon-backed PanelVerse catalogue with public search results from Wikipedia and Wikidata. Choose all entries, heroes and villains, or comics and graphic novels. Every external result includes a link to its source page; PanelVerse does not host full comic books or claim to provide an exhaustive index.
+Example request:
 
-- Public endpoint: `GET /api/discover/comics?q=Batman&type=all` (`type` can be `all`, `characters`, or `comics`).
-- No third-party API key is required for the Wikimedia sources.
-- The server caches successful searches for eight minutes, limits request rates, makes at most two upstream requests per cache miss, and uses a descriptive User-Agent.
-- Wikipedia and Wikidata can rate-limit or change results; the local catalogue remains available when external sources are temporarily unavailable.
-- The frontend only displays Wikimedia-hosted thumbnails from `upload.wikimedia.org`; source links are shown so readers can check context and applicable licensing.
+```http
+GET /api/discover/comics?q=Batman&type=all
+```
 
-The existing scripted PanelVerse Guide remains a curated demo, not a hosted generative-AI assistant. A true AI Q&A feature needs a configured model provider and server-side API credentials.
+Supported discovery types:
 
-## Content and rights
+- `all`
+- `characters`
+- `comics`
 
-Panelverse is an independent fan discovery project. It links to official publisher information and does not host or distribute comic books or publisher artwork. Character names and story titles remain the property of their respective owners.
+Features:
+- Combines local catalogue and public results.
+- No third-party API key required for Wikimedia sources.
+- Successful searches cached for eight minutes.
+- Rate limiting.
+- Maximum two upstream requests per cache miss.
+- Descriptive User-Agent.
+- External source links.
 
-## Install on desktop and phones
+External source availability and results depend on Wikipedia and Wikidata services.
 
-Panelverse is an installable Progressive Web App. Run it locally with `npm start` and open http://localhost:3000. For installation on other devices, deploy it to a secure HTTPS address.
+---
 
-- Desktop Chrome/Edge: select **Install app** in the address bar or browser menu.
-- Android Chrome: select **Install app** or **Add to Home screen**.
-- iPhone/iPad Safari: tap **Share**, then **Add to Home Screen**.
+## 📖 Reading Progress System
 
-The app shell can launch offline after its first visit. Catalog and shelf updates require the API connection. PWA installation is browser-based; it does not produce signed `.exe` or `.apk` installers. Native store packages can be added separately if needed.
+Readers can organize their comics through three statuses:
 
-## Reading progress
+1. Want to Read
+2. Reading
+3. Completed
 
-The comics library now supports a personal reading tracker. Add a comic to your tracker, then move it through **Want to read**, **Reading**, and **Completed**. Reading items can store a completion percentage. Progress is available from the overview and My Shelf and persists through the `/api/progress` endpoint in the local data store.
+Reading records can include a completion percentage.
 
-## Reading progress API
+Progress is stored in PostgreSQL and associated with the signed-in account.
 
-- GET /api/progress retrieves the signed-in reader's tracker.
-- POST /api/progress creates or updates a comic status and completion percentage.
-- DELETE /api/progress removes a comic from the tracker.
+---
 
-The overview now includes active reads. In Comics Library, choose **Track reading** to add a title; its button cycles through reading states. In My Shelf, use the status menu and slider to set its state and completion percentage. Reading records are stored in PostgreSQL and belong to the signed-in account.
+## 🧠 Personalized Recommendations
 
+PanelVerse recommends three comics using:
+- Saved characters.
+- Preferred universes.
+- Active reading progress.
+- Existing local catalogue information.
 
+Recommendations are calculated locally in the browser. This is a rule-based recommendation feature, not an external AI service.
 
-## Personalized discovery
+The existing PanelVerse Guide is also a curated scripted demo, not a hosted generative AI assistant.
 
-The overview surfaces three comic recommendations using the reader's saved characters, preferred universes, and active reading progress. Each suggestion explains why it was selected. The ranking runs in the browser from the local catalog and needs no external AI account or tracking service.
+---
 
-## Expanded universe library
+## 📦 Account Backup and Portability
 
-- Character profiles distinguish heroes and villains, include affiliations and connected characters, and can be sorted or filtered.
-- Movies & Series now has its own catalog with medium, year, continuity, genre, cast, character links, and related comics. Save screen titles to My Shelf as a watchlist.
-- Storyline Explorer orders arcs on a timeline and links stories to their characters and screen adaptations.
-- Catalog APIs: `GET /api/movies` and `GET /api/storylines`; screen titles can be saved using `POST /api/shelf` with `itemType: "screen"`.
+PanelVerse supports versioned JSON backups containing saved entries and reading progress.
 
-Film and series descriptions link to official publisher or streaming pages. Catalog availability varies by region.
+Features:
+- Export personal data.
+- Validate imported backups.
+- Merge supported entries.
+- Restore saved shelf information.
+- Restore reading progress.
 
-The screen catalog starts with a cross-publisher selection: Marvel films and DC films, plus the Invincible animated series. Character links, story arcs, comics, and screen entries connect through stable catalog IDs so additional material can be added without duplicating records.
+---
 
+## 🌐 Deployment
 
-## Universe coverage
+PanelVerse uses:
+- GitHub for source-code management.
+- Render for application hosting.
+- Neon for PostgreSQL database hosting.
 
-The starter catalog connects 16 characters, 13 comics, 11 screen titles, 4 story arcs, 6 crossover events, 8 teams or factions, and 5 alternate settings. It is structured for growth, not an exhaustive index of every publisher issue. The app keeps official publisher links and does not host full comics.
+For production deployment:
 
+1. Push the latest code to GitHub.
+2. Connect the repository to Render.
+3. Configure the production environment variables.
+4. Connect the Neon PostgreSQL database.
+5. Deploy the application.
+6. Verify `/api/health`.
+7. Test registration, login, saved shelf and reading progress.
+8. Configure HTTPS and production monitoring.
 
+Never place private environment variables in frontend code.
 
-## Reader account and portability
+---
 
-The current hosted version uses the signed-in account as the reader profile. Export produces a versioned JSON backup of saved entries and reading progress; importing merges supported items into the account. The `/api/profiles` endpoint keeps the single-profile interface compatible with the existing frontend.
+## 📱 Install PanelVerse
 
-- `GET /api/profiles` lists local profiles.
-- `POST /api/profiles` creates a local profile.
-- `GET /api/backup?owner=...` exports a profile backup.
-- `POST /api/backup` validates and merges a backup into a profile.
+PanelVerse supports Progressive Web App installation.
 
-The character directory also includes a two-character comparison view for powers, affiliations, origins, and connections.
+**Desktop (Chrome / Edge)**
+- Open the deployed HTTPS application.
+- Select Install App from the browser menu.
+
+**Android**
+- Open PanelVerse in Chrome.
+- Select Install App or Add to Home Screen.
+
+**iPhone / iPad**
+- Open PanelVerse in Safari.
+- Select Share.
+- Choose Add to Home Screen.
+
+The PWA installation does not automatically generate native APK or EXE installers.
+
+---
+
+## 📊 Starter Catalogue
+
+The initial catalogue contains:
+
+| Category | Entries |
+|---|---:|
+| Characters | 16 |
+| Comics | 13 |
+| Movies and Series | 11 |
+| Story Arcs | 4 |
+| Crossover Events | 6 |
+| Teams and Factions | 8 |
+| Alternate Settings | 5 |
+
+These are starter catalogue figures, not an exhaustive publisher index.
+
+---
+
+## 🔐 Security and Content Rights
+
+PanelVerse is an independent fan discovery project.
+
+Security considerations:
+- Passwords are hashed using bcrypt.
+- Authentication uses signed HttpOnly session cookies.
+- Database credentials remain server-side.
+- Saved entries and reading progress are account-scoped.
+- External discovery links to original sources.
+
+Content considerations:
+- PanelVerse does not host or distribute complete copyrighted comic books.
+- Character names and story titles remain the property of their respective owners.
+- External images and references are subject to their respective licensing terms.
+- Official publisher information should be linked where available.
+
+---
+
+## 🚧 Development Roadmap
+
+### Version 2.2 — Security and Administration
+- Admin dashboard.
+- Catalogue editor.
+- Content validation.
+- Audit history.
+- Email verification.
+- Password recovery.
+
+### Version 2.3 — Enhanced Reader Experience
+- Advanced reading statistics.
+- Improved reading recommendations.
+- Expanded publisher metadata.
+- Additional reading collections.
+
+### Version 2.4 — AI Integration
+- AI-powered comic Q&A.
+- Character explanations.
+- Reading recommendations.
+- Source citations.
+- Server-side model credentials.
+
+### Version 2.5 — Monetization
+- Free and premium membership.
+- Subscription management.
+- Payment integration.
+- Affiliate opportunities.
+- Premium reader features.
+
+### Version 3.0 — Platform Expansion
+- Native Android and iOS distribution.
+- Desktop packaging.
+- Community features.
+- Publisher partnerships.
+- Expanded comic universe catalogue.
+
+---
+
+## 👨‍💻 Project Developer
+
+**ASWIN SANKAR P S**
+
+AI Engineer | Python Full-Stack Developer | Generative AI & RAG Enthusiast
+
+GitHub: https://github.com/sankeraswin579-crypto
+
+---
+
+## 📄 Project Status
+
+**PanelVerse 2.1 — Full-Stack Application**
+
+An evolving superhero comics discovery and reading platform, designed with a scalable backend, persistent reader accounts and an extensible catalogue architecture.
+
+*Explore heroes. Discover universes. Build your reading journey.*
+
+---
+
+© 2026 PanelVerse. Independent fan discovery project.
