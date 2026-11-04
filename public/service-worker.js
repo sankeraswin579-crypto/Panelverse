@@ -1,4 +1,4 @@
-﻿const VERSION = 'panelverse-shell-v13';
+﻿const VERSION = 'panelverse-shell-v14';
 
 const APP_SHELL = [
   '/',
@@ -11,26 +11,39 @@ const APP_SHELL = [
   '/icon.svg'
 ];
 
+// Install the updated application shell.
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(VERSION)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(VERSION);
+      await cache.addAll(APP_SHELL);
+      await self.skipWaiting();
+    })()
   );
 });
 
+// Clean up old PanelVerse caches only.
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
+    (async () => {
+      const keys = await caches.keys();
+
+      await Promise.all(
         keys
-          .filter(key => key !== VERSION)
+          .filter(
+            key =>
+              key.startsWith('panelverse-shell-') &&
+              key !== VERSION
+          )
           .map(key => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
+      );
+
+      await self.clients.claim();
+    })()
   );
 });
 
+// Handle application requests.
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
@@ -38,44 +51,64 @@ self.addEventListener('fetch', event => {
   if (
     request.method !== 'GET' ||
     url.origin !== self.location.origin
-  ) return;
+  ) {
+    return;
+  }
 
-  // Never cache API responses or personal account data.
+  // Never cache personal account or API responses.
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request));
     return;
   }
 
-  // Load pages from the network first; use the app shell offline.
+  // Network-first navigation with offline fallback.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(async () => {
-        const fallback = url.pathname === '/login'
-          ? '/login'
-          : '/';
+      (async () => {
+        try {
+          return await fetch(request);
+        } catch {
+          const fallback =
+            url.pathname === '/login' ? '/login' : '/';
 
-        return await caches.match(fallback) ||
-          new Response('PanelVerse is offline. Please reconnect and try again.', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-          });
-      })
+          return (
+            await caches.match(fallback)
+          ) || new Response(
+            'PanelVerse is offline. Please reconnect and try again.',
+            {
+              status: 503,
+              headers: {
+                'Content-Type': 'text/plain; charset=utf-8'
+              }
+            }
+          );
+        }
+      })()
     );
+
     return;
   }
 
-  // Cache-first for static resources.
+  // Cache-first strategy for static resources.
   event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
+    (async () => {
+      const cache = await caches.open(VERSION);
+      const cached = await cache.match(request);
 
-      return fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(VERSION).then(cache => cache.put(request, copy));
-        }
-        return response;
-      });
-    })
+      if (cached) {
+        return cached;
+      }
+
+      const response = await fetch(request);
+
+      if (
+        response.ok &&
+        response.type === 'basic'
+      ) {
+        await cache.put(request, response.clone());
+      }
+
+      return response;
+    })()
   );
 });
