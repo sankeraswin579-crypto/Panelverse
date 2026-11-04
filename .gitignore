@@ -30,3 +30,36 @@ npm-debug.log*
 /panelverse-android/build/
 /panelverse-android/manifest-checksum.txt
 /panelverse-android/twa-manifest.json.bak
+
+
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Android signing files
+key.properties
+release-backup/
+*.aab
+*.apk
+
+# Service account credentials
+service-account*.json
+google-credentials*.json
+
+# Local configuration
+local.properties
+
+# Dependencies and build files
+node_modules/
+dist/
+build/
