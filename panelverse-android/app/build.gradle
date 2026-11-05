@@ -21,21 +21,20 @@ plugins {
 }
 
 
+// Signing credentials are intentionally excluded from source archives.
+// Debug builds remain available without private signing material.
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 
-if (!keystorePropertiesFile.exists()) {
-    throw new GradleException("Missing keystore.properties file")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
-if (!keystoreProperties['storePassword'] ||
-    !keystoreProperties['keyPassword'] ||
-    !keystoreProperties['keyAlias'] ||
-    !keystoreProperties['storeFile']) {
-    throw new GradleException("Keystore properties are incomplete")
-}
+def hasReleaseSigning =
+    keystoreProperties['storePassword'] &&
+    keystoreProperties['keyPassword'] &&
+    keystoreProperties['keyAlias'] &&
+    keystoreProperties['storeFile']
 
 def twaManifest = [
     applicationId: 'com.onrender.panelverse_dhu0.twa',
@@ -74,8 +73,8 @@ android {
         applicationId "com.onrender.panelverse_dhu0.twa"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode 3
-        versionName "3.0"
+        versionCode 4
+        versionName "3.1.0"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -171,17 +170,21 @@ android {
 
 
     signingConfigs {
-        release {
-            storeFile rootProject.file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
         }
     }
 
-        buildTypes {
+    buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
         }
     }

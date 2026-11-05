@@ -1,7 +1,7 @@
 {
   "packageId": "com.onrender.panelverse_dhu0.twa",
   "host": "panelverse-dhu0.onrender.com",
-  "name": "PanelVerse — Superhero Universe Explorer",
+  "name": "PanelVerse \u2014 Superhero Universe Explorer",
   "launcherName": "PanelVerse",
   "display": "standalone",
   "themeColor": "#0C1018",
@@ -17,11 +17,11 @@
   "maskableIconUrl": "https://panelverse-dhu0.onrender.com/icon.svg",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
-    "path": "D:\\Documents\\panelverse\\panelverse-android\\panelverse-release.keystore",
+    "path": "panelverse-release.keystore",
     "alias": "android"
   },
-  "appVersionName": "3.0",
-  "appVersionCode": 3,
+  "appVersionName": "3.1.0",
+  "appVersionCode": 4,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://panelverse-dhu0.onrender.com/manifest.webmanifest",
@@ -48,5 +48,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "3.0"
+  "appVersion": "3.1.0"
 }

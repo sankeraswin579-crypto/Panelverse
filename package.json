@@ -1,8 +1,8 @@
 {
   "name": "panelverse",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
-  "description": "PanelVerse shared comics and universe explorer with PostgreSQL accounts",
+  "description": "PanelVerse superhero and comic universe explorer with revocable PostgreSQL sessions",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",

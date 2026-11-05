@@ -49,6 +49,7 @@ function card(p){
 
   return `<article class="character-card" data-person="${esc(p.id)}">
     <div class="portrait" data-universe="${esc(p.universe)}">
+      ${p.imageUrl?`<img class="character-art" src="${esc(p.imageUrl)}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}
       <strong class="portrait-mark">${esc(initials(p.name))}</strong>
       <button class="save-button" data-save-type="character" data-save-id="${esc(p.id)}" aria-label="${saved?'Remove':'Save'} ${esc(p.name)}">${saved?'▣':'＋'}</button>
     </div>
@@ -210,6 +211,8 @@ function openCharacter(id){
 
   $('#detail-universe').textContent=p.universe.toUpperCase();
   $('#detail-monogram').textContent=initials(p.name);
+  const detailArt=$('#detail-art-image');
+  if(detailArt){detailArt.src=p.imageUrl||'';detailArt.hidden=!p.imageUrl;}
   $('#detail-meta').textContent=`${p.universe.toUpperCase()} · ${p.kind.toUpperCase()}`;
   $('#detail-name').textContent=p.name;
   $('#detail-identity').textContent=p.identity;
@@ -278,6 +281,11 @@ async function init(){
     ]);
 
     state.characters=a.data;
+    try{
+      const names=state.characters.map(p=>p.name).filter(Boolean);
+      const artwork=await api('/api/character-art?names='+encodeURIComponent(names.join('|')));
+      state.characters=state.characters.map(p=>({...p,imageUrl:artwork.data?.[p.name.toLowerCase()]||null}));
+    }catch(artError){console.warn('Character artwork unavailable:',artError.message);}
     state.comics=b.data;
     state.paths=c.data;
     state.adaptations=d.data;

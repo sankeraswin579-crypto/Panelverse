@@ -1,4 +1,4 @@
-# 🦸 PanelVerse 3.0.0
+# 🦸 PanelVerse 3.1.0
 
 ### Explore Heroes. Discover Universes. Track Your Reading.
 
@@ -10,6 +10,19 @@ Discover comic universes, explore connected characters, organize your personal r
 **GitHub Repository:** https://github.com/sankeraswin579-crypto/Panelverse
 
 ---
+
+## 🔐 Version 3.1.0 security upgrades
+
+- Opaque, cryptographically random session tokens; only token hashes are stored in PostgreSQL.
+- Server-side session revocation on logout and account deletion.
+- Seven-day session expiry.
+- PostgreSQL-backed rate limiting shared across app instances.
+- Automatic cleanup of expired sessions and old rate-limit records.
+- Android app version 3.1.0 (version code 4).
+
+Existing users must sign in again after the 3.1.0 backend deployment because the previous 3.0 session-cookie format is not reused. Account data, saved shelves, and reading progress remain in PostgreSQL.
+
+See [UPGRADE-3.1.0.md](UPGRADE-3.1.0.md) for deployment and migration notes.
 
 ## ✨ Features
 
@@ -51,7 +64,7 @@ Discover comic universes, explore connected characters, organize your personal r
 ### 👤 Reader Accounts
 - Account registration and authentication.
 - bcrypt password hashing.
-- Signed HttpOnly session cookies.
+- Revocable HttpOnly session cookies backed by PostgreSQL.
 - Account-specific saved collections.
 - Persistent reading progress.
 - JSON backup and restore functionality.
@@ -87,7 +100,7 @@ Features:
 | Backend | Node.js |
 | Database | Neon PostgreSQL |
 | API | REST API |
-| Authentication | bcrypt, HttpOnly Cookies |
+| Authentication | bcrypt, PostgreSQL-backed sessions, HttpOnly Cookies |
 | External Discovery | Wikipedia, Wikidata |
 | Application Type | Progressive Web App |
 | Deployment | Render |
@@ -379,7 +392,7 @@ PanelVerse is an independent fan discovery project.
 ### Security considerations
 
 - Passwords are hashed using bcrypt.
-- Authentication uses signed HttpOnly session cookies.
+- Authentication uses revocable PostgreSQL-backed sessions and HttpOnly cookies.
 - Database credentials remain server-side.
 - Saved entries and reading progress are account-scoped.
 - External discovery links to original sources.

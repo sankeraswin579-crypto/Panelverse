@@ -95,58 +95,56 @@ const cookieValue = (req, name) =>
     .find(value => value.startsWith(name + '='))
     ?.slice(name.length + 1);
 
-const makeSession = user => {
-  const expires = String(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const payload = `${user.id}.${expires}`;
 
-  const signature = crypto
-    .createHmac('sha256', SESSION_SECRET)
-    .update(payload)
-    .digest('base64url');
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-  return `pv_session=${Buffer.from(payload).toString('base64url')}.${signature}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
-};
+function sessionCookie(token) {
+  return `pv_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+}
+
+function clearSessionCookie() {
+  return `pv_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+}
+
+function hashSessionToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+async function createSession(user) {
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = hashSessionToken(token);
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+
+  await pool.query(
+    `INSERT INTO sessions(user_id, token_hash, expires_at)
+     VALUES($1, $2, $3)`,
+    [user.id, tokenHash, expiresAt]
+  );
+
+  return sessionCookie(token);
+}
+
+async function revokeSession(req) {
+  const token = cookieValue(req, 'pv_session');
+  if (!token || token.length > 200) return;
+
+  await pool.query(
+    'DELETE FROM sessions WHERE token_hash=$1',
+    [hashSessionToken(token)]
+  );
+}
 
 async function getUser(req) {
-  const raw = cookieValue(req, 'pv_session');
-
-  if (!raw) return null;
-
-  const [encoded, signature] = raw.split('.');
-
-  if (!encoded || !signature) return null;
-
-  let payload;
-
-  try {
-    payload = Buffer.from(encoded, 'base64url').toString();
-  } catch {
-    return null;
-  }
-
-  const expected = crypto
-    .createHmac('sha256', SESSION_SECRET)
-    .update(payload)
-    .digest('base64url');
-
-  const a = Buffer.from(signature);
-  const b = Buffer.from(expected);
-
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-    return null;
-  }
-
-  const dot = payload.lastIndexOf('.');
-  const id = payload.slice(0, dot);
-  const expires = Number(payload.slice(dot + 1));
-
-  if (!id || !Number.isFinite(expires) || expires < Date.now()) {
-    return null;
-  }
+  const token = cookieValue(req, 'pv_session');
+  if (!token || token.length > 200) return null;
 
   const result = await pool.query(
-    'SELECT id, name, email FROM users WHERE id=$1',
-    [id]
+    `SELECT u.id, u.name, u.email
+     FROM sessions s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.token_hash=$1 AND s.expires_at > NOW()
+     LIMIT 1`,
+    [hashSessionToken(token)]
   );
 
   return result.rows[0] || null;
@@ -189,22 +187,26 @@ const itemTables = {
 
 let initPromise;
 
-const authAttempts = new Map();
-
-function rateLimited(req) {
+async function rateLimited(req, bucket = 'auth', limit = 12, windowMs = 15 * 60 * 1000) {
   const ip = req.socket.remoteAddress || 'unknown';
-  const now = Date.now();
+  // Store a keyed digest rather than a raw IP address.
+  const keyHash = crypto.createHmac('sha256', SESSION_SECRET).update(ip).digest('hex');
 
-  let attempt = authAttempts.get(ip);
+  const result = await pool.query(
+    `INSERT INTO rate_limits(bucket, key_hash, window_started_at, hit_count)
+     VALUES($1, $2, NOW(), 1)
+     ON CONFLICT(bucket, key_hash) DO UPDATE SET
+       window_started_at = CASE
+         WHEN rate_limits.window_started_at <= NOW() - ($3::double precision * INTERVAL '1 millisecond')
+         THEN NOW() ELSE rate_limits.window_started_at END,
+       hit_count = CASE
+         WHEN rate_limits.window_started_at <= NOW() - ($3::double precision * INTERVAL '1 millisecond')
+         THEN 1 ELSE rate_limits.hit_count + 1 END
+     RETURNING hit_count`,
+    [bucket, keyHash, windowMs]
+  );
 
-  if (!attempt || now - attempt.started > 15 * 60 * 1000) {
-    attempt = { started: now, count: 0 };
-  }
-
-  attempt.count++;
-  authAttempts.set(ip, attempt);
-
-  return attempt.count > 12;
+  return Number(result.rows[0]?.hit_count || 0) > limit;
 }
 
 const tmdbCache = new Map();
@@ -291,15 +293,8 @@ async function searchTMDB(query) {
 
 const comicDiscoveryCache = new Map();
 const comicDiscoveryInFlight = new Map();
-const comicDiscoveryAttempts = new Map();
-
-const comicDiscoveryGlobal = {
-  started: Date.now(),
-  count: 0
-};
-
 const WIKIMEDIA_AGENT =
-  'PanelVerse/3.0 (+https://panelverse-dhu0.onrender.com)';
+  'PanelVerse/3.1 (+https://panelverse-dhu0.onrender.com)';
 
 const CHARACTER_CUES =
   /\b(superhero|supervillain|superheroine|fictional character|comic book character|comic-book character|fictional superhero|fictional superhuman)\b/i;
@@ -360,35 +355,8 @@ function discoveryText(value, max = 720) {
     .slice(0, max);
 }
 
-function discoveryRateLimited(req) {
-  const now = Date.now();
-  const ip = req.socket.remoteAddress || 'unknown';
-
-  let record = comicDiscoveryAttempts.get(ip);
-
-  if (!record || now - record.started > 10 * 60 * 1000) {
-    record = { started: now, count: 0 };
-  }
-
-  record.count++;
-  comicDiscoveryAttempts.set(ip, record);
-
-  if (comicDiscoveryAttempts.size > 4000) {
-    for (const [key, value] of comicDiscoveryAttempts) {
-      if (now - value.started > 10 * 60 * 1000) {
-        comicDiscoveryAttempts.delete(key);
-      }
-    }
-  }
-
-  if (now - comicDiscoveryGlobal.started > 15 * 60 * 1000) {
-    comicDiscoveryGlobal.started = now;
-    comicDiscoveryGlobal.count = 0;
-  }
-
-  comicDiscoveryGlobal.count++;
-
-  return record.count > 18 || comicDiscoveryGlobal.count > 80;
+async function discoveryRateLimited(req) {
+  return rateLimited(req, 'discovery', 18, 10 * 60 * 1000);
 }
 
 async function wikimediaJSON(endpoint) {
@@ -717,6 +685,25 @@ async function initializeDatabase() {
       data JSONB NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS sessions (
+      id BIGSERIAL PRIMARY KEY,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash CHAR(64) NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expires_at TIMESTAMPTZ NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id);
+    CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions(expires_at);
+
+    CREATE TABLE IF NOT EXISTS rate_limits (
+      bucket TEXT NOT NULL,
+      key_hash CHAR(64) NOT NULL,
+      window_started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      hit_count INTEGER NOT NULL DEFAULT 0 CHECK(hit_count >= 0),
+      PRIMARY KEY(bucket, key_hash)
+    );
+
     CREATE TABLE IF NOT EXISTS shelves (
       user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       item_type TEXT NOT NULL,
@@ -742,6 +729,12 @@ async function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS progress_user_idx
       ON reading_progress(user_id);
   `);
+
+  await pool.query('DELETE FROM sessions WHERE expires_at <= NOW()');
+  await pool.query(
+    `DELETE FROM rate_limits
+     WHERE window_started_at < NOW() - INTERVAL '2 days'`
+  );
 
   const file = path.join(ROOT, 'data', 'db.json');
   const legacy = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -865,19 +858,20 @@ async function route(req, res) {
       ok: true,
       name: 'PanelVerse API',
       database: 'connected',
-      version: '3.0.0'
+      version: '3.1.0'
     });
   }
 
   // Registration
   if (pathname === '/api/register' && req.method === 'POST') {
-    if (rateLimited(req)) {
+    await ensureDB();
+
+    if (await rateLimited(req)) {
       return send(res, 429, {
         error: 'Too many attempts. Please wait 15 minutes and try again.'
       });
     }
 
-    await ensureDB();
 
     const input = await bodyOf(req);
     const name = clean(input.name, 60);
@@ -978,7 +972,7 @@ async function route(req, res) {
         }
       }
 
-      res.setHeader('Set-Cookie', makeSession(user));
+      res.setHeader('Set-Cookie', await createSession(user));
 
       return send(res, 201, {
         ok: true,
@@ -1001,13 +995,14 @@ async function route(req, res) {
 
   // Login
   if (pathname === '/api/login' && req.method === 'POST') {
-    if (rateLimited(req)) {
+    await ensureDB();
+
+    if (await rateLimited(req)) {
       return send(res, 429, {
         error: 'Too many attempts. Please wait 15 minutes and try again.'
       });
     }
 
-    await ensureDB();
 
     const input = await bodyOf(req);
     const email = clean(input.email, 254).toLowerCase();
@@ -1037,7 +1032,7 @@ async function route(req, res) {
       });
     }
 
-    res.setHeader('Set-Cookie', makeSession(user));
+    res.setHeader('Set-Cookie', await createSession(user));
 
     return send(res, 200, {
       ok: true,
@@ -1051,11 +1046,9 @@ async function route(req, res) {
 
   // Logout
   if (pathname === '/api/logout' && req.method === 'POST') {
-    res.setHeader(
-      'Set-Cookie',
-      `pv_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-    );
-
+    await ensureDB();
+    await revokeSession(req);
+    res.setHeader('Set-Cookie', clearSessionCookie());
     return send(res, 200, { ok: true });
   }
 
@@ -1154,6 +1147,80 @@ async function route(req, res) {
       });
     }
 
+    // Character artwork lookup. Prefer freely licensed Wikimedia Commons files,
+    // then fall back to the Wikipedia REST summary thumbnail.
+    if (pathname === '/api/character-art' && req.method === 'GET') {
+      const names = (url.searchParams.get('names') || '').split('|').map(x => clean(x, 80)).filter(Boolean).slice(0, 40);
+      if (!names.length) return send(res, 400, { error: 'No character names supplied.' });
+
+      const images = {};
+      const results = await Promise.allSettled(names.map(async name => {
+        let src = '';
+        const queryVariants = [
+          name,
+          `${name} Marvel Comics character`,
+          `${name} superhero`,
+          `${name} comic book character`
+        ];
+        const normalizedName = name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        for (const searchTerm of [...new Set(queryVariants)]) {
+          try {
+            const commons = new URL('https://commons.wikimedia.org/w/api.php');
+            commons.search = new URLSearchParams({
+              action: 'query',
+              generator: 'search',
+              gsrsearch: searchTerm,
+              gsrnamespace: '6',
+              gsrlimit: '20',
+              prop: 'imageinfo',
+              iiprop: 'url|mime',
+              iiurlwidth: '700',
+              format: 'json'
+            }).toString();
+            const payload = await wikimediaJSON(commons);
+            const pages = Object.values(payload.query?.pages || {});
+            const ranked = pages.map(page => {
+              const title = (page.title || '').replace(/^File:/i, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+              const info = page.imageinfo?.[0];
+              const candidate = info?.thumburl || info?.url || '';
+              const phraseMatch = title.includes(normalizedName) ? 4 : 0;
+              const wordMatches = normalizedName.split(' ').filter(word => word.length > 2 && title.includes(word)).length;
+              const contextMatch = /marvel|comic|superhero|character/i.test(title) ? 2 : 0;
+              return { candidate, score: phraseMatch + wordMatches + contextMatch, mime: info?.mime || '' };
+            }).filter(item => /^https:\/\/upload\.wikimedia\.org\//i.test(item.candidate) && /^image\/(jpeg|png|webp|gif)$/i.test(item.mime));
+            ranked.sort((a, b) => b.score - a.score);
+            if (ranked[0]?.score > 0) {
+              src = ranked[0].candidate;
+              break;
+            }
+          } catch (_) {
+            // Try the next Commons search phrase, then the REST fallback.
+          }
+        }
+
+        if (!src) {
+          try {
+            const endpoint = new URL('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(name.replace(/ /g, '_')));
+            const payload = await wikimediaJSON(endpoint);
+            src = payload.thumbnail?.source || payload.originalimage?.source || '';
+          } catch (_) {}
+        }
+
+        if (src && /^https:\/\/(upload\.wikimedia\.org|images\.wikipedia\.org)\//i.test(src)) {
+          images[name.toLowerCase()] = src;
+        }
+      }));
+
+      const failed = results.filter(x => x.status === 'rejected').length;
+      return send(res, 200, {
+        data: images,
+        source: 'Wikimedia Commons with Wikipedia REST fallback',
+        requested: names.length,
+        found: Object.keys(images).length,
+        failed
+      });
+    }
+
     // TMDB discovery
     if (pathname === '/api/discover/tmdb' && req.method === 'GET') {
       const query = clean(url.searchParams.get('q'), 100);
@@ -1164,7 +1231,7 @@ async function route(req, res) {
         });
       }
 
-      if (discoveryRateLimited(req)) {
+      if (await discoveryRateLimited(req)) {
         return send(res, 429, {
           error: 'Search limit reached. Please wait a few minutes before trying again.'
         });
@@ -1198,7 +1265,7 @@ async function route(req, res) {
         });
       }
 
-      if (discoveryRateLimited(req)) {
+      if (await discoveryRateLimited(req)) {
         return send(res, 429, {
           error: 'Search limit reached. Please wait a few minutes before trying again.'
         });
@@ -1281,10 +1348,7 @@ async function route(req, res) {
         client.release();
       }
 
-      res.setHeader(
-        'Set-Cookie',
-        `pv_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-      );
+      res.setHeader('Set-Cookie', clearSessionCookie());
 
       return send(res, 200, { ok: true });
     }
