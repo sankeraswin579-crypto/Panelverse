@@ -1,0 +1,87 @@
+﻿diff --git a/package.json b/package.json
+index 6b708cc..544948b 100644
+--- a/package.json
++++ b/package.json
+@@ -1,8 +1,8 @@
+ {
+   "name": "panelverse",
+-  "version": "2.1.1",
++  "version": "3.0.0",
+   "private": true,
+   "description": "PanelVerse shared comics and universe explorer with PostgreSQL accounts",
+   "scripts": {
+     "start": "node server.js",
+     "dev": "node --watch server.js",
+diff --git a/server.js b/server.js
+index 9bfd5ea..4ea72ec 100644
+--- a/server.js
++++ b/server.js
+@@ -37,11 +37,14 @@ async function getUser(req) {
+   if(!id||!Number.isFinite(expires)||expires<Date.now()) return null;
+   const result=await pool.query('SELECT id, name, email FROM users WHERE id=$1',[id]); return result.rows[0]||null;
+ }
+ function checkOrigin(req) {
+   const origin=req.headers.origin;
+-  if(!origin) return true;
++  // Cookie-authenticated browser mutations must carry the same-origin header.
++  // Rejecting missing Origin closes the gap where a browser omits it on a
++  // cross-site form submission; same-origin fetch requests include it.
++  if(!origin) return false;
+   try { const u=new URL(origin); return u.host===req.headers.host; } catch { return false; }
+ }
+ const collections = { '/api/characters':'characters', '/api/comics':'comics', '/api/reading-paths':'readingPaths', '/api/adaptations':'adaptations', '/api/movies':'movies', '/api/storylines':'storylines', '/api/events':'events', '/api/teams':'teams', '/api/worlds':'worlds' };
+ const itemTables = { comic:'comics', screen:'movies', character:'characters', team:'teams', world:'worlds', event:'events' };
+ let initPromise;
+@@ -257,11 +260,11 @@ async function initializeDatabase() {
+ function ensureDB(){ if(!initPromise) initPromise=initializeDatabase(); return initPromise; }
+ async function catalogRows(key) { const r=await pool.query('SELECT data FROM catalog WHERE collection=$1',[key]); return r.rows[0]?.data||[]; }
+ async function route(req,res) {
+   const url=new URL(req.url,`http://${req.headers.host||'localhost'}`); const pathname=decodeURIComponent(url.pathname);
+   if(pathname.startsWith('/api/') && req.method!=='GET' && !checkOrigin(req)) return send(res,403,{error:'Request origin rejected.'});
+-  if(pathname==='/api/health'&&req.method==='GET') { await ensureDB(); await pool.query('SELECT 1'); return send(res,200,{ok:true,name:'PanelVerse API',database:'connected',version:'2.1.1'}); }
++  if(pathname==='/api/health'&&req.method==='GET') { await ensureDB(); await pool.query('SELECT 1'); return send(res,200,{ok:true,name:'PanelVerse API',database:'connected',version:'3.0.0'}); }
+   if(pathname==='/api/register'&&req.method==='POST') {
+     if(rateLimited(req)) return send(res,429,{error:'Too many attempts. Please wait 15 minutes and try again.'});
+     await ensureDB(); const input=await bodyOf(req); const name=clean(input.name,60); const email=clean(input.email,254).toLowerCase(); const password=typeof input.password==='string'?input.password:'';
+     if(name.length<2) return send(res,400,{error:'Name must contain at least 2 characters.'});
+     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res,400,{error:'Enter a valid email address.'});
+@@ -279,10 +282,11 @@ async function route(req,res) {
+     } catch(e){ if(e.code==='23505') return send(res,409,{error:'An account with this email already exists.'}); throw e; }
+   }
+   if(pathname==='/api/login'&&req.method==='POST') {
+     if(rateLimited(req)) return send(res,429,{error:'Too many attempts. Please wait 15 minutes and try again.'});
+     await ensureDB(); const input=await bodyOf(req); const email=clean(input.email,254).toLowerCase(); const password=typeof input.password==='string'?input.password:'';
++    if(password.length>200) return send(res,401,{error:'Email or password is incorrect.'});
+     const r=await pool.query('SELECT id,name,email,password_hash FROM users WHERE email=$1',[email]); const user=r.rows[0];
+     const ok=user?await bcrypt.compare(password,user.password_hash):false;
+     if(!user||!ok) return send(res,401,{error:'Email or password is incorrect.'});
+     res.setHeader('Set-Cookie',makeSession(user)); return send(res,200,{ok:true,user:{id:user.id,name:user.name,email:user.email}});
+   }
+@@ -296,14 +300,26 @@ async function route(req,res) {
+     if(pathname==='/api/me'&&req.method==='GET'){const visitor=await getUser(req);return send(res,200,{user:visitor});}
+     if(pathname==='/api/shelf'&&req.method==='GET'){const visitor=await getUser(req);if(!visitor)return send(res,200,{data:[]});}
+     if(pathname==='/api/progress'&&req.method==='GET'){const visitor=await getUser(req);if(!visitor)return send(res,200,{data:[]});}
+     if(pathname==='/api/profiles'&&req.method==='GET'){const visitor=await getUser(req);return send(res,200,{data:visitor?[{id:'local',name:visitor.name,createdAt:null}]:[]});}
+     if(pathname==='/api/guide'&&req.method==='POST'){const {question}=await bodyOf(req);const q=clean(question).toLowerCase();let answer='Try the character directory, then follow linked comics and screen adaptations to explore a universe.';if(q.includes('batman'))answer='A good comic starting point is Batman: Year One. You can then explore screen adaptations in Movies & series.';else if(q.includes('spider'))answer='Amazing Fantasy #15 is a classic Spider-Man starting point. Explore the Movies & series section for screen versions.';else if(q.includes('beginner')||q.includes('start'))answer='Start with a character you like, open their profile, then follow their comics, teams and screen appearances.';return send(res,200,{answer,mode:'PanelVerse discovery guide'});}
+-    if(pathname==='/api/discover/tmdb'&&req.method==='GET'){const q=clean(url.searchParams.get('q'),100);if(q.length<2)return send(res,400,{error:'Enter at least two characters to search.'});try{return send(res,200,await searchTMDB(q));}catch(error){return send(res,502,{error:error.message||'External movie search is unavailable.'});}}
++    if(pathname==='/api/discover/tmdb'&&req.method==='GET'){const q=clean(url.searchParams.get('q'),100);if(q.length<2)return send(res,400,{error:'Enter at least two characters to search.'});if(discoveryRateLimited(req))return send(res,429,{error:'Search limit reached. Please wait a few minutes before trying again.'});try{return send(res,200,await searchTMDB(q));}catch(error){console.error('TMDB discovery failed:',error);return send(res,502,{error:'External movie search is temporarily unavailable.'});}}
+     if(pathname==='/api/discover/comics'&&req.method==='GET'){const q=clean(url.searchParams.get('q'),80),kind=clean(url.searchParams.get('type'),20)||'all';if(q.length<2)return send(res,400,{error:'Enter at least two characters to search.'});if(!['all','characters','comics'].includes(kind))return send(res,400,{error:'Choose all, characters, or comics.'});if(discoveryRateLimited(req))return send(res,429,{error:'Search limit reached. Please wait a few minutes before trying again.'});try{return send(res,200,await discoverComicKnowledge(q,kind==='characters'?'character':kind==='comics'?'comic':'all'));}catch(error){console.error('Comic discovery failed:',error);return send(res,502,{error:'Comic discovery is temporarily unavailable. Please try again.'});}}
+     const user=await getUser(req);
+     if(!user && !['/api/login','/api/register'].includes(pathname)) return send(res,401,{error:'Please sign in to your PanelVerse account.'});
++    if(pathname==='/api/account'&&req.method==='DELETE') {
++      const input=await bodyOf(req), password=typeof input.password==='string'?input.password:'';
++      if(password.length>200) return send(res,400,{error:'Enter your current password to delete this account.'});
++      const account=await pool.query('SELECT password_hash FROM users WHERE id=$1',[user.id]);
++      if(!account.rows[0]||!await bcrypt.compare(password,account.rows[0].password_hash)) return send(res,401,{error:'The current password is incorrect.'});
++      const client=await pool.connect();
++      try { await client.query('BEGIN'); await client.query('DELETE FROM users WHERE id=$1',[user.id]); await client.query('COMMIT'); }
++      catch(error) { await client.query('ROLLBACK'); throw error; }
++      finally { client.release(); }
++      res.setHeader('Set-Cookie',`pv_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${process.env.NODE_ENV==='production'?'; Secure':''}`);
++      return send(res,200,{ok:true});
++    }
+     if(pathname==='/api/profiles'&&req.method==='GET') return send(res,200,{data:[{id:'local',name:user.name,createdAt:null}]});
+     if(pathname==='/api/profiles'&&req.method==='POST') return send(res,200,{data:{id:'local',name:user.name}});
+     if(pathname==='/api/backup'&&req.method==='GET') {
+       const [shelf,progress]=await Promise.all([pool.query('SELECT item_type AS "itemType",item_id AS "itemId",added_at AS "addedAt" FROM shelves WHERE user_id=$1 ORDER BY added_at DESC',[user.id]),pool.query('SELECT comic_id AS "comicId",status,progress,updated_at AS "updatedAt" FROM reading_progress WHERE user_id=$1 ORDER BY updated_at DESC',[user.id])]);
+       return send(res,200,{format:'panelverse-backup',version:1,exportedAt:new Date().toISOString(),profile:{id:'local',name:user.name},shelf:shelf.rows,progress:progress.rows});

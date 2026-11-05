@@ -1,0 +1,73 @@
+﻿diff --git a/panelverse-android/app/build.gradle b/panelverse-android/app/build.gradle
+index b69c47d..86c8060 100644
+--- a/panelverse-android/app/build.gradle
++++ b/panelverse-android/app/build.gradle
+@@ -39,11 +39,11 @@ if (!keystoreProperties['storePassword'] ||
+ 
+ def twaManifest = [
+     applicationId: 'com.onrender.panelverse_dhu0.twa',
+     hostName: 'panelverse-dhu0.onrender.com', // The domain being opened in the TWA.
+     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
+-    name: 'Panelverse ├â┬ó├óΓÇÜ┬¼├óΓé¼┬¥ Superhero Universe Explorer', // The application name.
++    name: 'PanelVerse ΓÇö Superhero Universe Explorer', // The application name.
+     launcherName: 'Panelverse', // The name shown on the Android Launcher.
+     themeColor: '#0C1018', // The color used for the status bar.
+     themeColorDark: '#000000', // The color used for the dark status bar.
+     navigationColor: '#000000', // The color used for the navigation bar.
+     navigationColorDark: '#000000', // The color used for the dark navbar.
+@@ -72,12 +72,12 @@ android {
+     namespace "com.onrender.panelverse_dhu0.twa"
+     defaultConfig {
+         applicationId "com.onrender.panelverse_dhu0.twa"
+         minSdkVersion 24
+         targetSdkVersion 36
+-        versionCode 2
+-        versionName "2"
++        versionCode 3
++        versionName "3.0"
+ 
+         // The name for the application
+         resValue "string", "appName", twaManifest.name
+ 
+         // The name for the application on the Android Launcher
+diff --git a/panelverse-android/twa-manifest.json b/panelverse-android/twa-manifest.json
+index e405e56..c2dbbd9 100644
+--- a/panelverse-android/twa-manifest.json
++++ b/panelverse-android/twa-manifest.json
+@@ -1,10 +1,10 @@
+ {
+   "packageId": "com.onrender.panelverse_dhu0.twa",
+   "host": "panelverse-dhu0.onrender.com",
+-  "name": "Panelverse ├â┬ó├óΓÇÜ┬¼├óΓé¼┬¥ Superhero Universe Explorer",
+-  "launcherName": "Panelverse",
++  "name": "PanelVerse ΓÇö Superhero Universe Explorer",
++  "launcherName": "PanelVerse",
+   "display": "standalone",
+   "themeColor": "#0C1018",
+   "themeColorDark": "#000000",
+   "navigationColor": "#000000",
+   "navigationColorDark": "#000000",
+@@ -18,12 +18,12 @@
+   "splashScreenFadeOutDuration": 300,
+   "signingKey": {
+     "path": "D:\\Documents\\panelverse\\panelverse-android\\panelverse-release.keystore",
+     "alias": "android"
+   },
+-  "appVersionName": "2",
+-  "appVersionCode": 2,
++  "appVersionName": "3.0",
++  "appVersionCode": 3,
+   "shortcuts": [],
+   "generatorApp": "bubblewrap-cli",
+   "webManifestUrl": "https://panelverse-dhu0.onrender.com/manifest.webmanifest",
+   "fallbackType": "customtabs",
+   "features": {},
+@@ -47,6 +47,6 @@
+   "protocolHandlers": [],
+   "fileHandlers": [],
+   "launchHandlerClientMode": "",
+   "displayOverride": [],
+   "appVersion": "2"
+-}
+\ No newline at end of file
++}
