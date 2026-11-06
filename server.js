@@ -39,7 +39,7 @@ const SECURITY = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'Content-Security-Policy':
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://upload.wikimedia.org; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://upload.wikimedia.org https://images.wikipedia.org  https://static.tvmaze.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 };
 
 const MIME = {
@@ -830,6 +830,502 @@ async function catalogRows(key) {
   return result.rows[0]?.data || [];
 }
 
+
+// PanelVerse catalogue artwork enrichment. This only enriches API responses;
+// it does not write to or replace the Neon catalogue.
+const PANELVERSE_ARTWORK_CACHE_TTL = 12 * 60 * 60 * 1000;
+const panelVerseArtworkCache = new Map();
+const panelVerseArtworkInFlight = new Map();
+
+function approvedPanelVerseImage(value) {
+  if (typeof value !== 'string' || !value) return null;
+  try {
+    const parsed = new URL(value);
+    const allowedHosts = new Set([
+      'image.tmdb.org',,
+      'upload.wikimedia.org',,
+      'images.wikipedia.org',
+      'static.tvmaze.com'
+    ]);
+    return parsed.protocol === 'https:' && allowedHosts.has(parsed.hostname)
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function cachedPanelVerseArtwork(key, loader) {
+  const cached = panelVerseArtworkCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (panelVerseArtworkInFlight.has(key)) return panelVerseArtworkInFlight.get(key);
+
+  const task = (async () => {
+    let value = null;
+    try {
+      value = await loader();
+    } catch (error) {
+      console.warn('PanelVerse artwork lookup failed:', key, error.message);
+    }
+    panelVerseArtworkCache.set(key, {
+      value,
+      expiresAt: Date.now() + PANELVERSE_ARTWORK_CACHE_TTL
+    });
+    return value;
+  })();
+
+  panelVerseArtworkInFlight.set(key, task);
+  try {
+    return await task;
+  } finally {
+    panelVerseArtworkInFlight.delete(key);
+  }
+}
+
+async function mapPanelVerseArtwork(rows, concurrency, worker) {
+  const output = new Array(rows.length);
+  let nextIndex = 0;
+  const workers = Array.from(
+    { length: Math.min(concurrency, rows.length) },
+    async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= rows.length) return;
+        try {
+          output[index] = await worker(rows[index]);
+        } catch (error) {
+          console.warn('PanelVerse artwork item skipped:', error.message);
+          output[index] = rows[index];
+        }
+      }
+    }
+  );
+  await Promise.all(workers);
+  return output;
+}
+
+async function wikipediaArtworkForTitle(title) {
+  const endpoint = new URL('https://en.wikipedia.org/w/api.php');
+  const params = {
+    action: 'query',
+    generator: 'search',
+    gsrsearch: title,
+    gsrnamespace: '0',
+    gsrlimit: '10',
+    prop: 'pageimages|info',
+    piprop: 'thumbnail',
+    pithumbsize: '700',
+    inprop: 'url',
+    format: 'json',
+    formatversion: '2'
+  };
+  for (const [key, value] of Object.entries(params)) {
+    endpoint.searchParams.set(key, value);
+  }
+
+  const payload = await wikimediaJSON(endpoint);
+  const pages = Array.isArray(payload.query?.pages)
+    ? payload.query.pages
+    : Object.values(payload.query?.pages || {});
+  const target = normalizeDiscoveryTitle(title);
+  const targetWords = target.split(' ').filter(word => word.length > 2);
+
+  const candidates = pages.map(page => {
+    const imageUrl = approvedPanelVerseImage(page.thumbnail?.source);
+    const pageTitle = normalizeDiscoveryTitle(page.title);
+    const pageWords = pageTitle.split(' ');
+    const matched = targetWords.filter(word => pageWords.includes(word)).length;
+    const score = pageTitle === target
+      ? 100
+      : targetWords.length ? matched / targetWords.length : 0;
+    return { imageUrl, score, pageTitle };
+  }).filter(item => item.imageUrl);
+
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.score >= 0.8 ? candidates[0].imageUrl : null;
+}
+
+
+// ============================================
+// PANELVERSE 3.1 — LICENCE-AWARE ARTWORK
+// ============================================
+
+function isCommercialArtworkLicense(value) {
+  const license = String(value || '').trim();
+  // Conservative allowlist: CC0, CC BY, CC BY-SA, or public domain.
+  // NonCommercial and NoDerivatives variants are intentionally excluded.
+  return /^(?:CC0\b|CC BY(?:-SA)?\s|Public domain\b|PD\b)/i.test(license);
+}
+
+function exactArtworkTitleMatch(requestedTitle, candidateTitle, allowedSuffixes = []) {
+  const target = normalizeDiscoveryTitle(requestedTitle);
+  const candidate = normalizeDiscoveryTitle(candidateTitle);
+  if (!target || !candidate) return false;
+  if (candidate === target) return true;
+  return allowedSuffixes.some(suffix => candidate === target + ' ' + normalizeDiscoveryTitle(suffix));
+}
+
+function plainArtworkMetadata(value) {
+  return String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 240);
+}
+
+async function commonsArtworkForTitle(title, searchHint, year = '') {
+  if (!title) return null;
+
+  const endpoint = new URL('https://commons.wikimedia.org/w/api.php');
+  endpoint.search = new URLSearchParams({
+    action: 'query',
+    generator: 'search',
+    gsrsearch: [title, year, searchHint].filter(Boolean).join(' '),
+    gsrnamespace: '6',
+    gsrlimit: '30',
+    prop: 'imageinfo',
+    iiprop: 'url|mime|extmetadata',
+    iiurlwidth: '700',
+    format: 'json',
+    formatversion: '2'
+  }).toString();
+
+  const payload = await wikimediaJSON(endpoint);
+  const pages = Array.isArray(payload.query?.pages)
+    ? payload.query.pages
+    : Object.values(payload.query?.pages || {});
+
+  const suffixes = searchHint.includes('comic')
+    ? ['cover', 'front cover', 'comic cover']
+    : ['poster', 'film poster', 'movie poster'];
+
+  const candidates = pages.map(page => {
+    const info = page.imageinfo?.[0];
+    const metadata = info?.extmetadata || {};
+    const fileTitle = String(page.title || '')
+      .replace(/^File:/i, '')
+      .replace(/\.[^.]+$/, '');
+    const license = plainArtworkMetadata(
+      metadata.LicenseShortName?.value || metadata.UsageTerms?.value || ''
+    );
+    const creator = plainArtworkMetadata(
+      metadata.Artist?.value || metadata.Credit?.value || ''
+    );
+    const imageUrl = approvedPanelVerseImage(info?.thumburl || info?.url);
+    const descriptionUrl = info?.descriptionurl ||
+      'https://commons.wikimedia.org/wiki/' + encodeURIComponent(String(page.title || '').replace(/ /g, '_'));
+
+    return {
+      imageUrl,
+      fileTitle,
+      license,
+      licenseUrl: metadata.LicenseUrl?.value || '',
+      creator,
+      descriptionUrl,
+      mime: info?.mime || '',
+      exact: exactArtworkTitleMatch(title, fileTitle, suffixes)
+    };
+  }).filter(item =>
+    item.imageUrl &&
+    item.exact &&
+    /^image\/(jpeg|png|webp|gif)$/i.test(item.mime) &&
+    isCommercialArtworkLicense(item.license)
+  );
+
+  const best = candidates[0];
+  if (!best) return null;
+
+  const credit = [best.creator, best.license]
+    .filter(Boolean)
+    .join(' · ');
+
+  return {
+    url: best.imageUrl,
+    source: 'Wikimedia Commons',
+    license: best.license,
+    licenseUrl: best.licenseUrl,
+    credit,
+    sourceUrl: best.descriptionUrl
+  };
+}
+
+async function comicCoverFor(item) {
+  const title = String(item.title || '').trim();
+  if (!title) return { coverUrl: null };
+
+  // Only retain an existing URL when the catalogue explicitly marks its rights as verified.
+  const existing = approvedPanelVerseImage(item.coverUrl);
+  if (existing && item.coverRightsVerified === true) {
+    return {
+      coverUrl: existing,
+      coverCredit: item.coverCredit || '',
+      coverLicense: item.coverLicense || '',
+      coverLicenseUrl: item.coverLicenseUrl || '',
+      coverSourceUrl: item.coverSourceUrl || ''
+    };
+  }
+
+  const key = 'comic-commons:' + normalizeDiscoveryTitle(title);
+  const artwork = await cachedPanelVerseArtwork(key, () =>
+    commonsArtworkForTitle(title, 'comic book cover')
+  );
+
+  if (!artwork) {
+    return {
+      coverUrl: null,
+      coverCredit: '',
+      coverLicense: '',
+      coverLicenseUrl: '',
+      coverSourceUrl: ''
+    };
+  }
+
+  return {
+    coverUrl: artwork.url,
+    coverSource: artwork.source,
+    coverCredit: artwork.credit,
+    coverLicense: artwork.license,
+    coverLicenseUrl: artwork.licenseUrl,
+    coverSourceUrl: artwork.sourceUrl
+  };
+}
+
+async function tvmazeArtworkFor(title, year = '') {
+  const endpoint = new URL('https://api.tvmaze.com/search/shows');
+  endpoint.searchParams.set('q', title);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': WIKIMEDIA_AGENT
+    },
+    signal: AbortSignal.timeout(8000)
+  });
+
+  if (!response.ok) throw new Error('TVmaze returned ' + response.status);
+
+  const results = await response.json();
+  const matches = (Array.isArray(results) ? results : [])
+    .map(result => result.show)
+    .filter(show => show &&
+      normalizeDiscoveryTitle(show.name) === normalizeDiscoveryTitle(title));
+
+  const show = matches.find(item =>
+    year && String(item.premiered || '').slice(0, 4) === year
+  ) || matches[0];
+
+  if (!show) return null;
+
+  const posterUrl = approvedPanelVerseImage(
+    show.image?.original || show.image?.medium
+  );
+  if (!posterUrl) return null;
+
+  return {
+    posterUrl,
+    backdropUrl: null,
+    posterSource: 'TVmaze',
+    posterCredit: 'TVmaze',
+    posterSourceUrl: show.url || 'https://www.tvmaze.com/'
+  };
+}
+
+async function screenArtworkFor(item) {
+  const title = String(item.title || '').trim();
+  if (!title) return { ...item, posterUrl: null, backdropUrl: null };
+
+  const medium = String(item.medium || '').toLowerCase();
+  const isSeries = /series|television|\btv\b/.test(medium);
+  const searchTitle = title
+    .replace(/\s*(?:[·:—-]\s*)?season\s+\d+\s*$/i, '')
+    .trim();
+  const year = String(item.year || '').slice(0, 4);
+  const key = (isSeries ? 'tvmaze:' : 'movie-commons:') +
+    normalizeDiscoveryTitle(searchTitle) + ':' + year;
+
+  const artwork = await cachedPanelVerseArtwork(key, async () => {
+    if (isSeries) {
+      try {
+        return await tvmazeArtworkFor(searchTitle, year);
+      } catch (error) {
+        console.warn('TVmaze artwork lookup failed:', error.message);
+        return null;
+      }
+    }
+
+    try {
+      const commons = await commonsArtworkForTitle(searchTitle, 'film poster', year);
+      if (!commons) return null;
+      return {
+        posterUrl: commons.url,
+        backdropUrl: null,
+        posterSource: commons.source,
+        posterCredit: commons.credit,
+        posterLicense: commons.license,
+        posterLicenseUrl: commons.licenseUrl,
+        posterSourceUrl: commons.sourceUrl
+      };
+    } catch (error) {
+      console.warn('Movie artwork lookup failed:', error.message);
+      return null;
+    }
+  });
+
+  return {
+    ...item,
+    posterUrl: approvedPanelVerseImage(artwork?.posterUrl) || null,
+    backdropUrl: approvedPanelVerseImage(artwork?.backdropUrl) || null,
+    posterSource: artwork?.posterSource || null,
+    posterCredit: artwork?.posterCredit || '',
+    posterLicense: artwork?.posterLicense || '',
+    posterLicenseUrl: artwork?.posterLicenseUrl || '',
+    posterSourceUrl: artwork?.posterSourceUrl || ''
+  };
+}
+
+// PANELVERSE CURATED ARTWORK MANIFEST — BEGIN
+const PANELVERSE_ARTWORK_MANIFEST_PATH = path.join(ROOT, 'data', 'artwork.json');
+let panelVerseArtworkManifestCache = {
+  mtimeMs: -1,
+  items: {}
+};
+
+function readPanelVerseArtworkManifest() {
+  try {
+    const stat = fs.statSync(PANELVERSE_ARTWORK_MANIFEST_PATH);
+    if (panelVerseArtworkManifestCache.mtimeMs === stat.mtimeMs) {
+      return panelVerseArtworkManifestCache.items;
+    }
+
+    const parsed = JSON.parse(
+      fs.readFileSync(PANELVERSE_ARTWORK_MANIFEST_PATH, 'utf8')
+    );
+    const items = parsed && parsed.version === 1 &&
+      parsed.items && typeof parsed.items === 'object' &&
+      !Array.isArray(parsed.items)
+        ? parsed.items
+        : {};
+
+    panelVerseArtworkManifestCache = {
+      mtimeMs: stat.mtimeMs,
+      items
+    };
+    return items;
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.warn('PanelVerse artwork manifest could not be read:', error.message);
+    }
+    panelVerseArtworkManifestCache = { mtimeMs: -1, items: {} };
+    return {};
+  }
+}
+
+function isApprovedCuratedLicense(value) {
+  const license = String(value || '').trim().replace(/\s+/g, ' ');
+  return /^(?:CC0(?:\s+1\.0)?|CC BY(?:-SA|-ND|-SA-ND)?(?:\s+\d+(?:\.\d+)?)?|Public domain|Original artwork\s*[-—:]\s*owned by PanelVerse)$/i.test(license);
+}
+
+function curatedArtworkImageUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const candidate = value.trim();
+
+  // Prefer self-hosted files committed with PanelVerse.
+  if (/^\/artwork\/[a-z0-9][a-z0-9._/-]*$/i.test(candidate) &&
+      !candidate.split('/').includes('..') &&
+      !candidate.includes('\\')) {
+    return candidate;
+  }
+
+  // Remote URLs must use a host already allowed by approvedPanelVerseImage().
+  return approvedPanelVerseImage(candidate);
+}
+
+function getCuratedArtwork(item, type) {
+  const id = String(item?.id || '').trim();
+  if (!id) return null;
+
+  const record = readPanelVerseArtworkManifest()[id];
+  if (!record || record.type !== type || record.rightsVerified !== true) {
+    return null;
+  }
+
+  const imageUrl = curatedArtworkImageUrl(record.url);
+  const license = String(record.license || '').trim();
+  const credit = String(record.credit || record.creator || '').trim();
+  const sourceUrl = String(record.sourceUrl || '').trim();
+  const licenseUrl = String(record.licenseUrl || '').trim();
+  const isOriginal = /^Original artwork\s*[-—:]\s*owned by PanelVerse$/i.test(license);
+
+  if (!imageUrl || !isApprovedCuratedLicense(license)) return null;
+  if (!credit && !/^CC0(?:\s+1\.0)?$/i.test(license)) return null;
+  if (!isOriginal && !/^https:\/\//i.test(sourceUrl)) return null;
+  if (licenseUrl && !/^https:\/\//i.test(licenseUrl)) return null;
+
+  return {
+    url: imageUrl,
+    source: String(record.source || 'Curated artwork'),
+    creator: String(record.creator || ''),
+    credit,
+    license,
+    licenseUrl,
+    sourceUrl
+  };
+}
+
+async function enrichComicArtwork(rows) {
+  return mapPanelVerseArtwork(rows, 5, async item => {
+    const curated = getCuratedArtwork(item, 'comic');
+    if (curated) {
+      return {
+        ...item,
+        coverUrl: curated.url,
+        coverSource: curated.source,
+        coverCreator: curated.creator,
+        coverCredit: curated.credit,
+        coverLicense: curated.license,
+        coverLicenseUrl: curated.licenseUrl,
+        coverSourceUrl: curated.sourceUrl,
+        coverRightsVerified: true
+      };
+    }
+
+    const discovered = await comicCoverFor(item);
+    return {
+      ...item,
+      ...(discovered && typeof discovered === 'object'
+        ? discovered
+        : { coverUrl: discovered || null })
+    };
+  });
+}
+
+async function enrichMovieArtwork(rows) {
+  return mapPanelVerseArtwork(rows, 5, async item => {
+    const curated = getCuratedArtwork(item, 'screen');
+    if (curated) {
+      return {
+        ...item,
+        posterUrl: curated.url,
+        posterSource: curated.source,
+        posterCreator: curated.creator,
+        posterCredit: curated.credit,
+        posterLicense: curated.license,
+        posterLicenseUrl: curated.licenseUrl,
+        posterSourceUrl: curated.sourceUrl,
+        posterRightsVerified: true
+      };
+    }
+
+    return screenArtworkFor(item);
+  });
+}
+// PANELVERSE CURATED ARTWORK MANIFEST — END
+
+
 // HTTP routes
 
 async function route(req, res) {
@@ -1066,6 +1562,9 @@ async function route(req, res) {
 
     if (req.method === 'GET' && publicCollection) {
       let rows = await catalogRows(publicCollection);
+
+        if (publicCollection === 'comics') rows = await enrichComicArtwork(rows);
+        if (publicCollection === 'movies') rows = await enrichMovieArtwork(rows);
 
       const query = clean(url.searchParams.get('q')).toLowerCase();
       const universe = clean(url.searchParams.get('universe'));

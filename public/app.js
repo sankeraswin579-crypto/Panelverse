@@ -66,7 +66,10 @@ function comicCard(c){
   const saved=state.shelf.some(x=>x.itemType==='comic'&&x.itemId===c.id);
 
   return `<article class="comic-card">
-    <div class="cover" data-u="${esc(c.universe)}">${esc(c.title)}</div>
+    <div class="cover" data-u="${esc(c.universe)}" style="position:relative;overflow:hidden;isolation:isolate">
+      ${c.coverUrl ? `<img class="comic-cover-image" src="${esc(c.coverUrl)}" alt="${esc(c.title)} cover" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none">` : ""}
+      <span style="position:relative;z-index:1">${esc(c.title)}</span>
+    </div>
     <div class="comic-copy">
       <small>${esc(c.universe.toUpperCase())} · ${esc(c.format.toUpperCase())}</small>
       <h3>${esc(c.title)}</h3>
@@ -284,7 +287,7 @@ async function init(){
     try{
       const names=state.characters.map(p=>p.name).filter(Boolean);
       const artwork=await api('/api/character-art?names='+encodeURIComponent(names.join('|')));
-      state.characters=state.characters.map(p=>({...p,imageUrl:artwork.data?.[p.name.toLowerCase()]||null}));
+      state.characters=state.characters.map(p=>({...p,imageUrl:artwork.data?.[p.name.toLowerCase()]||p.imageUrl||null}));
     }catch(artError){console.warn('Character artwork unavailable:',artError.message);}
     state.comics=b.data;
     state.paths=c.data;
@@ -804,10 +807,11 @@ function screenCard(m){
   const comic=state.comics.find(c=>c.id===m.relatedComicId);
 
   return `<article class="screen-card">
-    <div class="screen-card-art" data-u="${esc(m.universe)}">
-      <span>${esc(m.medium.toUpperCase())}</span>
-      <b>${esc(String(m.year))}</b>
-      <i>${esc(m.universe.toUpperCase())}</i>
+    <div class="screen-card-art" data-u="${esc(m.universe)}" style="position:relative;overflow:hidden;isolation:isolate">
+      ${m.posterUrl || m.backdropUrl ? `<img class="screen-poster-image" src="${esc(m.posterUrl || m.backdropUrl)}" alt="${esc(m.title)} poster" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none">` : ""}
+      <span style="position:relative;z-index:1">${esc(m.medium.toUpperCase())}</span>
+      <b style="position:relative;z-index:1">${esc(String(m.year))}</b>
+      <i style="position:relative;z-index:1">${esc(m.universe.toUpperCase())}</i>
     </div>
 
     <div class="screen-card-body">
@@ -817,6 +821,7 @@ function screenCard(m){
       </div>
 
       <h3>${esc(m.title)}</h3>
+      ${m.posterSourceUrl && m.posterCredit ? `<small class="art-credit"><a href="${esc(m.posterSourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(m.posterCredit)} · Source</a></small>` : ''}
       <p>${esc(m.summary)}</p>
 
       <div class="screen-credits">

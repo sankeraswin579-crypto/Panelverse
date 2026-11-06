@@ -1,0 +1,15 @@
+PANELVERSE 3.0 — MERGE PATCH
+
+This patch updates only these existing files:
+- server.js
+- public/app.js
+- public/styles.css
+
+Merge into your existing project root (the folder containing server.js):
+1. Make a backup or commit your current project first.
+2. Extract this ZIP directly into that project root.
+3. Allow Windows to replace the three files above.
+4. Keep your existing data/db.json, .env, Neon credentials, Android signing files, and all other project files unchanged.
+5. Restart locally and test character discovery before deploying.
+
+This is an overlay patch, not a full project replacement.

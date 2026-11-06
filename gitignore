@@ -1,0 +1,65 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+npm-debug.log*
+# PanelVerse Android signing credentials
+/panelverse-android/*.keystore
+/panelverse-android/*.jks
+/panelverse-android/keystore.properties
+/panelverse-android/*.p12
+/panelverse-android/*.pfx
+
+/panelverse-android/*.keystore
+
+# PanelVerse Android local files and secrets
+/panelverse-android/.gradle/
+/panelverse-android/**/build/
+/panelverse-android/local.properties
+/panelverse-android/keystore.properties
+/panelverse-android/*.keystore
+/panelverse-android/**/*.keystore
+/panelverse-android/release-backup/
+/panelverse-android/*.aab
+/panelverse-android/*.apk
+/panelverse-android/*.idsig
+
+
+# Android generated reports and local backup files
+/panelverse-android/build/
+/panelverse-android/manifest-checksum.txt
+/panelverse-android/twa-manifest.json.bak
+
+
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Android signing files
+key.properties
+release-backup/
+*.aab
+*.apk
+
+# Service account credentials
+service-account*.json
+google-credentials*.json
+
+# Local configuration
+local.properties
+
+# Dependencies and build files
+node_modules/
+dist/
+build/

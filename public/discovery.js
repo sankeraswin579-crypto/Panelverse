@@ -16,7 +16,7 @@
   }
   function resultCard(item) {
     const isCharacter = item.type === 'character';
-    const image = typeof item.imageUrl === 'string' && item.imageUrl.startsWith('https://upload.wikimedia.org/')
+    const image = typeof item.imageUrl === 'string' && /^https:\/\/(upload\.wikimedia\.org|images\.wikipedia\.org)\//.test(item.imageUrl)
       ? `<img class="discovery-art-image" src="${esc(item.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
       : `<div class="discovery-art-fallback" aria-hidden="true">${isCharacter ? '✦' : '▤'}</div>`;
     return `<article class="discovery-card">
