@@ -39,7 +39,7 @@ const SECURITY = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'Content-Security-Policy':
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://upload.wikimedia.org https://images.wikipedia.org  https://static.tvmaze.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://www.themoviedb.org https://covers.openlibrary.org https://upload.wikimedia.org https://images.wikipedia.org https://static.tvmaze.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 };
 
 const MIME = {
@@ -267,8 +267,8 @@ async function searchTMDB(query) {
       title: item.title || item.name || 'Untitled',
       year: (item.release_date || item.first_air_date || '').slice(0, 4),
       overview: item.overview || item.known_for_department || '',
-      posterUrl: item.poster_path
-        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+      posterUrl: item.poster_path || item.profile_path
+        ? `https://image.tmdb.org/t/p/w500${item.poster_path || item.profile_path}`
         : null,
       backdropUrl: item.backdrop_path
         ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
@@ -287,6 +287,29 @@ async function searchTMDB(query) {
   });
 
   return value;
+}
+
+async function tmdbArtworkForTitle(title, year, mediaType) {
+  if (!process.env.TMDB_READ_ACCESS_TOKEN && !process.env.TMDB_API_KEY) {
+    return null;
+  }
+
+  const result = await searchTMDB(title);
+  const matches = result.results.filter(item =>
+    item.mediaType === mediaType &&
+    normalizeDiscoveryTitle(item.title) === normalizeDiscoveryTitle(title) &&
+    item.posterUrl
+  );
+  const best = matches.find(item => year && item.year === year) || matches[0];
+  if (!best) return null;
+
+  return {
+    posterUrl: best.posterUrl,
+    backdropUrl: best.backdropUrl,
+    posterSource: 'TMDB',
+    posterCredit: 'TMDB',
+    posterSourceUrl: best.tmdbUrl
+  };
 }
 
 // Public, source-linked discovery for comics and superhero characters.
@@ -495,6 +518,124 @@ async function searchWikidataComics(query, kind) {
   }).filter(Boolean);
 }
 
+async function openLibraryDiscovery(query) {
+  const endpoint = new URL('https://openlibrary.org/search.json');
+  endpoint.searchParams.set('q', query);
+  endpoint.searchParams.set(
+    'fields',
+    'title,cover_i,key,first_publish_year,subject,author_name'
+  );
+  endpoint.searchParams.set('limit', '10');
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': 'PanelVerse/3.1 (live comic discovery)'
+    },
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!response.ok) throw new Error('Open Library search returned ' + response.status);
+
+  const payload = await response.json();
+  return (payload.docs || [])
+    .filter(item => {
+      const subjects = Array.isArray(item.subject) ? item.subject.join(' ') : '';
+      const isComicBook = /\b(comic|graphic novel|manga|superhero)\b/i.test(subjects);
+      const exactTitle = normalizeDiscoveryTitle(item.title) === normalizeDiscoveryTitle(query);
+      return item.cover_i && (isComicBook || exactTitle);
+    })
+    .slice(0, 8)
+    .map(item => ({
+      id: 'openlibrary-' + String(item.key || item.cover_i).replace(/[^a-z0-9]/gi, ''),
+      type: 'comic',
+      title: discoveryText(item.title, 180),
+      summary: [
+        Array.isArray(item.author_name) && item.author_name.length
+          ? 'By ' + item.author_name.slice(0, 3).join(', ')
+          : '',
+        item.first_publish_year ? 'First published ' + item.first_publish_year : '',
+        'Book record and cover from Open Library.'
+      ].filter(Boolean).join(' · '),
+      imageUrl: 'https://covers.openlibrary.org/b/id/' +
+        encodeURIComponent(String(item.cover_i)) + '-M.jpg?default=false',
+      source: 'Open Library',
+      sourceLinks: [{
+        label: 'Open Library record',
+        url: 'https://openlibrary.org' + (item.key || '')
+      }]
+    }));
+}
+
+async function searchWikipediaTopics(query) {
+  const url = new URL('https://en.wikipedia.org/w/api.php');
+  url.search = new URLSearchParams({
+    action: 'query',
+    generator: 'search',
+    gsrsearch: query,
+    gsrnamespace: '0',
+    gsrlimit: '8',
+    prop: 'extracts|pageimages|info',
+    exintro: '1',
+    explaintext: '1',
+    exchars: '560',
+    piprop: 'thumbnail',
+    pithumbsize: '500',
+    inprop: 'url',
+    format: 'json',
+    formatversion: '2'
+  }).toString();
+  const payload = await wikimediaJSON(url);
+  const pages = Array.isArray(payload.query?.pages)
+    ? payload.query.pages
+    : Object.values(payload.query?.pages || {});
+
+  return pages.map(page => ({
+    id: 'wikipedia-topic-' + String(page.pageid),
+    type: 'reference',
+    title: discoveryText(page.title, 180),
+    summary: discoveryText(page.extract, 650) || 'Open the source article for details.',
+    imageUrl: typeof page.thumbnail?.source === 'string' &&
+      page.thumbnail.source.startsWith('https://upload.wikimedia.org/')
+        ? page.thumbnail.source
+        : null,
+    source: 'Wikipedia',
+    sourceLinks: [{
+      label: 'Wikipedia article',
+      url: typeof page.fullurl === 'string' &&
+        page.fullurl.startsWith('https://en.wikipedia.org/')
+          ? page.fullurl
+          : 'https://en.wikipedia.org/?curid=' + encodeURIComponent(page.pageid)
+    }]
+  }));
+}
+
+async function searchWikidataTopics(query) {
+  const url = new URL('https://www.wikidata.org/w/api.php');
+  url.search = new URLSearchParams({
+    action: 'wbsearchentities',
+    search: query,
+    language: 'en',
+    uselang: 'en',
+    type: 'item',
+    limit: '8',
+    format: 'json'
+  }).toString();
+  const payload = await wikimediaJSON(url);
+
+  return (payload.search || []).map(item => ({
+    id: 'wikidata-topic-' + item.id,
+    type: 'reference',
+    title: discoveryText(item.label, 180),
+    summary: discoveryText(item.description, 420) || 'Open the Wikidata entry for structured details.',
+    imageUrl: null,
+    source: 'Wikidata',
+    sourceLinks: [{
+      label: 'Wikidata entry',
+      url: 'https://www.wikidata.org/wiki/' + encodeURIComponent(item.id)
+    }]
+  }));
+}
+
 function normalizeDiscoveryTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -661,6 +802,160 @@ async function discoverComicKnowledge(query, kind) {
 
   comicDiscoveryInFlight.set(cacheKey, task);
 
+  try {
+    return await task;
+  } finally {
+    comicDiscoveryInFlight.delete(cacheKey);
+  }
+}
+
+async function discoverEverything(query, kind) {
+  const cacheKey = 'everything:' + kind + ':' + query.toLowerCase();
+  const cached = comicDiscoveryCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  if (comicDiscoveryInFlight.has(cacheKey)) return comicDiscoveryInFlight.get(cacheKey);
+
+  const task = (async () => {
+    const collectionNames = [
+      'characters', 'comics', 'movies', 'adaptations',
+      'teams', 'worlds', 'events', 'storylines'
+    ];
+    const wikiKind = kind === 'characters'
+      ? 'character'
+      : kind === 'comics'
+        ? 'comic'
+        : 'all';
+    const searchWiki = ['all', 'characters', 'comics'].includes(kind);
+    const searchScreen = ['all', 'screen'].includes(kind);
+    const searchBooks = ['all', 'comics'].includes(kind);
+    const searchReferences = ['all', 'universe'].includes(kind);
+
+    const [collectionsResult, wiki, wikidata, wikiTopics, wikidataTopics, tmdb, books] = await Promise.all([
+      Promise.all(collectionNames.map(name => catalogRows(name))),
+      searchWiki
+        ? searchWikipediaComics(query, wikiKind).then(data => ({ data })).catch(error => ({ error }))
+        : Promise.resolve({ data: [] }),
+      searchWiki
+        ? searchWikidataComics(query, wikiKind).then(data => ({ data })).catch(error => ({ error }))
+        : Promise.resolve({ data: [] }),
+      searchReferences
+        ? searchWikipediaTopics(query).then(data => ({ data })).catch(error => ({ error }))
+        : Promise.resolve({ data: [] }),
+      searchReferences
+        ? searchWikidataTopics(query).then(data => ({ data })).catch(error => ({ error }))
+        : Promise.resolve({ data: [] }),
+      searchScreen
+        ? searchTMDB(query).then(data => ({
+            configured: data.configured,
+            data: data.results
+              .filter(item => searchScreen ? ['movie', 'tv', 'person'].includes(item.mediaType) : false)
+              .map(item => ({
+                id: 'tmdb-' + item.mediaType + '-' + item.id,
+                type: item.mediaType === 'movie'
+                  ? 'film'
+                  : item.mediaType === 'tv' ? 'series' : 'person',
+                title: item.title,
+                summary: item.overview || 'Open TMDB for cast, release and related-title details.',
+                imageUrl: item.posterUrl || item.backdropUrl,
+                source: 'TMDB',
+                sourceLinks: [{ label: 'TMDB details', url: item.tmdbUrl }]
+              }))
+          })).catch(error => ({ error }))
+        : Promise.resolve({ configured: false, data: [] }),
+      searchBooks
+        ? openLibraryDiscovery(query).then(data => ({ data })).catch(error => ({ error }))
+        : Promise.resolve({ data: [] })
+    ]);
+
+    const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const q = normalizeDiscoveryTitle(query);
+    const definitions = [
+      { index: 0, type: 'character', title: 'name', group: 'characters' },
+      { index: 1, type: 'comic', title: 'title', group: 'comics' },
+      { index: 2, type: 'film', title: 'title', group: 'screen', medium: 'Film' },
+      { index: 2, type: 'series', title: 'title', group: 'screen', medium: 'Series' },
+      { index: 3, type: 'adaptation', title: 'title', group: 'screen' },
+      { index: 4, type: 'team', title: 'name', group: 'universe' },
+      { index: 5, type: 'world', title: 'name', group: 'universe' },
+      { index: 6, type: 'event', title: 'title', group: 'universe' },
+      { index: 7, type: 'storyline', title: 'title', group: 'universe' }
+    ];
+    const localGroups = definitions.map(definition => {
+      if (kind !== 'all' && kind !== definition.group) return [];
+      const rows = collectionsResult[definition.index] || [];
+      return rows
+        .filter(item => !definition.medium || item.medium === definition.medium)
+        .filter(item => {
+          const haystack = JSON.stringify(item).toLowerCase();
+          return tokens.every(token => haystack.includes(token));
+        })
+        .sort((a, b) => {
+          const at = normalizeDiscoveryTitle(a[definition.title]);
+          const bt = normalizeDiscoveryTitle(b[definition.title]);
+          return Number(bt === q) - Number(at === q) ||
+            Number(bt.startsWith(q)) - Number(at.startsWith(q));
+        })
+        .slice(0, 4)
+        .map(item => ({
+          id: 'panelverse-' + definition.type + '-' + item.id,
+          type: definition.type,
+          title: item[definition.title] || 'Untitled',
+          summary: item.summary || item.description || 'A PanelVerse catalogue entry.',
+          imageUrl: item.imageUrl || item.coverUrl || item.posterUrl || null,
+          source: 'PanelVerse catalogue',
+          sourceLinks: item.publisherUrl
+            ? [{ label: 'Publisher information', url: item.publisherUrl }]
+            : []
+        }));
+    });
+
+    const externalGroups = [
+      wiki.data || [],
+      wikidata.data || [],
+      wikiTopics.data || [],
+      wikidataTopics.data || [],
+      tmdb.data || [],
+      books.data || []
+    ];
+    const results = mergeDiscoveryResults([...localGroups, ...externalGroups], 40);
+    const sources = ['PanelVerse catalogue'];
+    if (searchWiki && wiki.data) sources.push('Wikipedia');
+    if (searchWiki && wikidata.data) sources.push('Wikidata');
+    if (searchReferences && wikiTopics.data && !sources.includes('Wikipedia')) sources.push('Wikipedia');
+    if (searchReferences && wikidataTopics.data && !sources.includes('Wikidata')) sources.push('Wikidata');
+    if (searchScreen && tmdb.configured && tmdb.data) sources.push('TMDB');
+    if (searchBooks && books.data) sources.push('Open Library');
+    const externalAvailable =
+      (searchWiki && (Boolean(wiki.data) || Boolean(wikidata.data))) ||
+      (searchReferences && (Boolean(wikiTopics.data) || Boolean(wikidataTopics.data))) ||
+      (searchScreen && Boolean(tmdb.configured) && Boolean(tmdb.data)) ||
+      (searchBooks && Boolean(books.data));
+    const externalUnavailable = !externalAvailable;
+
+    const value = {
+      query,
+      type: kind,
+      total: results.length,
+      results,
+      sources,
+      externalUnavailable,
+      notice: externalUnavailable
+        ? 'Public sources are temporarily unavailable. Showing matching PanelVerse catalog entries when possible.'
+        : 'Searches available public sources and the PanelVerse catalog. Results and image coverage vary by source; open source links for full context.'
+    };
+
+    comicDiscoveryCache.set(cacheKey, {
+      value,
+      expires: Date.now() + 8 * 60 * 1000
+    });
+    if (comicDiscoveryCache.size > 250) {
+      const oldest = comicDiscoveryCache.keys().next().value;
+      if (oldest) comicDiscoveryCache.delete(oldest);
+    }
+    return value;
+  })();
+
+  comicDiscoveryInFlight.set(cacheKey, task);
   try {
     return await task;
   } finally {
@@ -843,6 +1138,7 @@ function approvedPanelVerseImage(value) {
     const parsed = new URL(value);
     const allowedHosts = new Set([
       'image.tmdb.org',,
+      'covers.openlibrary.org',
       'upload.wikimedia.org',,
       'images.wikipedia.org',
       'static.tvmaze.com'
@@ -1053,6 +1349,42 @@ async function commonsArtworkForTitle(title, searchHint, year = '') {
   };
 }
 
+async function openLibraryCoverForTitle(title) {
+  if (!title) return null;
+
+  const endpoint = new URL('https://openlibrary.org/search.json');
+  endpoint.searchParams.set('title', title);
+  endpoint.searchParams.set('fields', 'title,cover_i,key');
+  endpoint.searchParams.set('limit', '10');
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': 'PanelVerse/3.1 (catalogue artwork lookup)'
+    },
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!response.ok) throw new Error('Open Library returned ' + response.status);
+
+  const payload = await response.json();
+  const target = normalizeDiscoveryTitle(title);
+  const match = (payload.docs || []).find(item =>
+    item.cover_i &&
+    normalizeDiscoveryTitle(item.title) === target
+  );
+  if (!match) return null;
+
+  return {
+    url: 'https://covers.openlibrary.org/b/id/' +
+      encodeURIComponent(String(match.cover_i)) + '-M.jpg?default=false',
+    source: 'Open Library',
+    license: '',
+    licenseUrl: '',
+    credit: 'Open Library',
+    sourceUrl: 'https://openlibrary.org' + (match.key || '')
+  };
+}
+
 async function comicCoverFor(item) {
   const title = String(item.title || '').trim();
   if (!title) return { coverUrl: null };
@@ -1070,9 +1402,11 @@ async function comicCoverFor(item) {
   }
 
   const key = 'comic-commons:' + normalizeDiscoveryTitle(title);
-  const artwork = await cachedPanelVerseArtwork(key, () =>
-    commonsArtworkForTitle(title, 'comic book cover')
-  );
+  const artwork = await cachedPanelVerseArtwork(key, async () => {
+    const openLibrary = await openLibraryCoverForTitle(title);
+    if (openLibrary) return openLibrary;
+    return commonsArtworkForTitle(title, 'comic book cover');
+  });
 
   if (!artwork) {
     return {
@@ -1148,6 +1482,17 @@ async function screenArtworkFor(item) {
     normalizeDiscoveryTitle(searchTitle) + ':' + year;
 
   const artwork = await cachedPanelVerseArtwork(key, async () => {
+    try {
+      const tmdb = await tmdbArtworkForTitle(
+        searchTitle,
+        year,
+        isSeries ? 'tv' : 'movie'
+      );
+      if (tmdb) return tmdb;
+    } catch (error) {
+      console.warn('TMDB artwork lookup failed:', error.message);
+    }
+
     if (isSeries) {
       try {
         return await tvmazeArtworkFor(searchTitle, year);
@@ -1758,9 +2103,9 @@ async function route(req, res) {
         });
       }
 
-      if (!['all', 'characters', 'comics'].includes(kind)) {
+      if (!['all', 'characters', 'comics', 'screen', 'universe'].includes(kind)) {
         return send(res, 400, {
-          error: 'Choose all, characters, or comics.'
+          error: 'Choose all, characters, comics, movies and series, or universe entries.'
         });
       }
 
@@ -1774,14 +2119,7 @@ async function route(req, res) {
         return send(
           res,
           200,
-          await discoverComicKnowledge(
-            query,
-            kind === 'characters'
-              ? 'character'
-              : kind === 'comics'
-                ? 'comic'
-                : 'all'
-          )
+          await discoverEverything(query, kind)
         );
       } catch (error) {
         console.error('Comic discovery failed:', error);
@@ -2233,7 +2571,7 @@ function serveFile(res, relative) {
 }
 
 // Server startup
-http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
   Promise.resolve(route(req, res)).catch(error => {
     console.error(error);
 
@@ -2250,6 +2588,28 @@ http.createServer((req, res) => {
       );
     }
   });
-}).listen(PORT, HOST, () => {
+});
+
+server.on('error', error => {
+  if (error.code === 'EADDRINUSE') {
+    console.error('PanelVerse could not start: ' + HOST + ':' + PORT + ' is already in use.');
+    console.error('Stop the other process using this port, or start PanelVerse on port 3001:');
+    console.error("  $env:PORT = '3001'; npm start");
+    process.exitCode = 1;
+    return;
+  }
+
+  if (error.code === 'EACCES') {
+    console.error('PanelVerse cannot listen on ' + HOST + ':' + PORT + ': permission was denied.');
+    console.error('Choose an unprivileged port such as 3001, then try again.');
+    process.exitCode = 1;
+    return;
+  }
+
+  console.error('PanelVerse failed to start:', error);
+  process.exitCode = 1;
+});
+
+server.listen(PORT, HOST, () => {
   console.log(`PanelVerse API listening on ${HOST}:${PORT}`);
 });

@@ -72,6 +72,7 @@ function comicCard(c){
     </div>
     <div class="comic-copy">
       <small>${esc(c.universe.toUpperCase())} · ${esc(c.format.toUpperCase())}</small>
+      ${c.coverSourceUrl&&c.coverCredit?'<small class="art-credit"><a href="'+esc(c.coverSourceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(c.coverCredit)+' · Artwork source</a></small>':''}
       <h3>${esc(c.title)}</h3>
       <p class="creators">${esc(c.creators)}</p>
       <p>${esc(c.description)}</p>
@@ -284,11 +285,6 @@ async function init(){
     ]);
 
     state.characters=a.data;
-    try{
-      const names=state.characters.map(p=>p.name).filter(Boolean);
-      const artwork=await api('/api/character-art?names='+encodeURIComponent(names.join('|')));
-      state.characters=state.characters.map(p=>({...p,imageUrl:artwork.data?.[p.name.toLowerCase()]||p.imageUrl||null}));
-    }catch(artError){console.warn('Character artwork unavailable:',artError.message);}
     state.comics=b.data;
     state.paths=c.data;
     state.adaptations=d.data;
@@ -301,6 +297,22 @@ async function init(){
 
     renderAll();
     setupCharacterCompare();
+
+    const names=state.characters.map(p=>p.name).filter(Boolean);
+    api('/api/character-art?names='+encodeURIComponent(names.join('|')))
+      .then(artwork=>{
+        state.characters=state.characters.map(p=>({
+          ...p,
+          imageUrl:artwork.data?.[p.name.toLowerCase()]||p.imageUrl||null
+        }));
+        renderCharacters();
+        $('#featured-grid').innerHTML=state.characters
+          .filter(p=>p.kind==='Hero')
+          .slice(0,3)
+          .map(card)
+          .join('');
+      })
+      .catch(artError=>console.warn('Character artwork unavailable:',artError.message));
   }catch(error){
     document.querySelectorAll('.card-grid,.comic-grid').forEach(el=>{
       el.innerHTML=`<div class="error-state">${esc(error.message)} · Start the server with <b>npm start</b>.</div>`;
@@ -308,7 +320,64 @@ async function init(){
   }
 }
 
+function openArtworkViewer(image){
+  const dialog=$('#artwork-viewer');
+  const viewerImage=$('#artwork-viewer-image');
+  const source=image.closest('.comic-card,.screen-card,.discovery-card')
+    ?.querySelector('.art-credit a,.discovery-links a');
+
+  viewerImage.src=image.currentSrc||image.src;
+  viewerImage.alt=image.alt||'Artwork preview';
+  $('#artwork-viewer-title').textContent=image.alt||'Artwork preview';
+  const sourceLink=$('#artwork-viewer-source');
+  if(source){
+    sourceLink.href=source.href;
+    sourceLink.textContent=source.textContent;
+    sourceLink.hidden=false;
+  }else{
+    sourceLink.href=image.src;
+    sourceLink.textContent='Open image file ↗';
+    sourceLink.hidden=false;
+  }
+  if(!dialog.open)dialog.showModal();
+}
+
+function prepareArtworkViewers(){
+  document.querySelectorAll('.character-art,.comic-cover-image,.screen-poster-image,.discovery-art-image').forEach(image=>{
+    image.classList.add('zoomable-art');
+    image.tabIndex=0;
+    image.setAttribute('role','button');
+    image.setAttribute('aria-label','View '+(image.alt||'artwork')+' larger');
+  });
+}
+
+prepareArtworkViewers();
+new MutationObserver(prepareArtworkViewers).observe(document.body,{childList:true,subtree:true});
+
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('.zoomable-art')){
+    e.preventDefault();
+    openArtworkViewer(e.target);
+  }
+});
+
 document.addEventListener('click',async e=>{
+  const artwork=e.target.closest('.zoomable-art');
+  if(artwork){
+    e.preventDefault();
+    openArtworkViewer(artwork);
+    return;
+  }
+
+  if(e.target.closest('[data-artwork-close]')){
+    $('#artwork-viewer').close();
+    return;
+  }
+  if(e.target.id==='artwork-viewer'){
+    $('#artwork-viewer').close();
+    return;
+  }
+
   const nav=e.target.closest('[data-page],[data-go]');
 
   if(nav){
@@ -413,6 +482,21 @@ if(globalSearchInput){
 
     state.query=event.target.value;
     renderAll();
+  });
+
+  globalSearchInput.addEventListener('keydown',event=>{
+    if(event.key!=='Enter')return;
+    const query=globalSearchInput.value.trim();
+    if(query.length<2)return;
+    event.preventDefault();
+    const discoveryInput=$('#comic-discovery-input');
+    const discoveryType=$('#comic-discovery-type');
+    const discoveryForm=$('#comic-discovery-form');
+    if(!discoveryInput||!discoveryType||!discoveryForm)return;
+    discoveryInput.value=query;
+    discoveryType.value='all';
+    document.querySelector('[data-page="discover"]')?.click();
+    discoveryForm.requestSubmit();
   });
 
   globalSearchInput.addEventListener('change',clearEmailFromGlobalSearch);
