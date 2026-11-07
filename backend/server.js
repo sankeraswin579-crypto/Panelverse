@@ -7,9 +7,11 @@ const crypto = require('node:crypto');
 const { URL } = require('node:url');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const { fetchTMDBSearchResponse } = require('./tmdb-auth');
 
-const ROOT = __dirname;
-const PUBLIC = path.join(ROOT, 'public');
+const ROOT = path.resolve(__dirname, '..');
+const DATA = path.join(__dirname, 'data');
+const PUBLIC = path.join(ROOT, 'frontend');
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 
@@ -210,10 +212,22 @@ async function rateLimited(req, bucket = 'auth', limit = 12, windowMs = 15 * 60 
 }
 
 const tmdbCache = new Map();
+let tmdbCredentialsRejected = false;
+let tmdbAuthMode = process.env.TMDB_READ_ACCESS_TOKEN ? 'bearer' : 'api-key';
 
 async function searchTMDB(query) {
   const token = process.env.TMDB_READ_ACCESS_TOKEN || '';
   const apiKey = process.env.TMDB_API_KEY || '';
+
+  if ((!token && !apiKey) || tmdbCredentialsRejected) {
+    return { configured: false, results: [], authRejected: tmdbCredentialsRejected };
+  }
+
+  if (tmdbAuthMode === 'bearer' && !token && apiKey) {
+    tmdbAuthMode = 'api-key';
+  } else if (tmdbAuthMode === 'api-key' && !apiKey && token) {
+    tmdbAuthMode = 'bearer';
+  }
 
   if (!token && !apiKey) {
     return { configured: false, results: [] };
@@ -234,21 +248,19 @@ async function searchTMDB(query) {
   endpoint.searchParams.set('include_adult', 'false');
   endpoint.searchParams.set('page', '1');
 
-  if (apiKey) {
-    endpoint.searchParams.set('api_key', apiKey);
-  }
-
-  const response = await fetch(endpoint, {
-    headers: token
-      ? {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json'
-        }
-      : {
-          Accept: 'application/json'
-        },
-    signal: AbortSignal.timeout(8000)
+  const requestResult = await fetchTMDBSearchResponse(endpoint, {
+    token,
+    apiKey,
+    authMode: tmdbAuthMode
   });
+  tmdbAuthMode = requestResult.authMode;
+  const { response } = requestResult;
+
+  if (response.status === 401 || response.status === 403) {
+    tmdbCredentialsRejected = true;
+    console.warn('TMDB authentication was rejected. Check TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY in the deployed server environment. Artwork fallbacks remain enabled.');
+    return { configured: false, results: [], authRejected: true };
+  }
 
   if (!response.ok) {
     throw new Error(`TMDB search failed (${response.status}).`);
@@ -645,6 +657,49 @@ function normalizeDiscoveryTitle(value) {
     .trim();
 }
 
+function safeDiscoverySave(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
+
+  const allowedTypes = new Set([
+    'character', 'comic', 'film', 'series', 'person', 'team', 'world',
+    'event', 'storyline', 'adaptation', 'reference'
+  ]);
+  const type = clean(input.type, 24).toLowerCase();
+  const title = clean(input.title, 200);
+  if (!allowedTypes.has(type) || !title) return null;
+
+  const sourceLinks = (Array.isArray(input.sourceLinks) ? input.sourceLinks : [])
+    .slice(0, 8)
+    .map(link => {
+      if (!link || typeof link !== 'object') return null;
+      try {
+        const parsed = new URL(link.url);
+        if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
+        if (parsed.href.length > 700) return null;
+        return { label: clean(link.label, 80) || 'Open source', url: parsed.href };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+
+  const imageUrl = approvedPanelVerseImage(input.imageUrl);
+  const normalizedTitle = normalizeDiscoveryTitle(title).slice(0, 180);
+  const discoveryId = `${type}:${normalizedTitle}`;
+
+  return {
+    discoveryId,
+    payload: {
+      type,
+      title,
+      summary: clean(input.summary, 1200),
+      source: clean(input.source, 120) || 'Public source',
+      imageUrl,
+      sourceLinks
+    }
+  };
+}
+
 function mergeDiscoveryResults(groups, limit = 24) {
   const merged = new Map();
 
@@ -1007,6 +1062,14 @@ async function initializeDatabase() {
       PRIMARY KEY(user_id, item_type, item_id)
     );
 
+    CREATE TABLE IF NOT EXISTS saved_discoveries (
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      discovery_id TEXT NOT NULL,
+      payload JSONB NOT NULL,
+      added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY(user_id, discovery_id)
+    );
+
     CREATE TABLE IF NOT EXISTS reading_progress (
       user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       comic_id TEXT NOT NULL,
@@ -1021,6 +1084,9 @@ async function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS shelves_user_idx
       ON shelves(user_id);
 
+    CREATE INDEX IF NOT EXISTS saved_discoveries_user_idx
+      ON saved_discoveries(user_id, added_at DESC);
+
     CREATE INDEX IF NOT EXISTS progress_user_idx
       ON reading_progress(user_id);
   `);
@@ -1031,7 +1097,7 @@ async function initializeDatabase() {
      WHERE window_started_at < NOW() - INTERVAL '2 days'`
   );
 
-  const file = path.join(ROOT, 'data', 'db.json');
+  const file = path.join(DATA, 'db.json');
   const legacy = JSON.parse(fs.readFileSync(file, 'utf8'));
 
   const catalogCollections = [
@@ -1137,9 +1203,9 @@ function approvedPanelVerseImage(value) {
   try {
     const parsed = new URL(value);
     const allowedHosts = new Set([
-      'image.tmdb.org',,
+      'image.tmdb.org',
       'covers.openlibrary.org',
-      'upload.wikimedia.org',,
+      'upload.wikimedia.org',
       'images.wikipedia.org',
       'static.tvmaze.com'
     ]);
@@ -1533,7 +1599,7 @@ async function screenArtworkFor(item) {
 }
 
 // PANELVERSE CURATED ARTWORK MANIFEST — BEGIN
-const PANELVERSE_ARTWORK_MANIFEST_PATH = path.join(ROOT, 'data', 'artwork.json');
+const PANELVERSE_ARTWORK_MANIFEST_PATH = path.join(DATA, 'artwork.json');
 let panelVerseArtworkManifestCache = {
   mtimeMs: -1,
   items: {}
@@ -1758,7 +1824,7 @@ async function route(req, res) {
 
       if (count.rows[0].n === 1) {
         const legacy = JSON.parse(
-          fs.readFileSync(path.join(ROOT, 'data', 'db.json'), 'utf8')
+          fs.readFileSync(path.join(DATA, 'db.json'), 'utf8')
         );
 
         const validTypes = {
@@ -1944,6 +2010,23 @@ async function route(req, res) {
       if (!visitor) {
         return send(res, 200, { data: [] });
       }
+    }
+
+    if (pathname === '/api/discovery-saves' && req.method === 'GET') {
+      const visitor = await getUser(req);
+
+      if (!visitor) return send(res, 200, { data: [] });
+
+      const result = await pool.query(
+        `SELECT discovery_id AS "discoveryId", payload,
+                added_at AS "addedAt"
+         FROM saved_discoveries
+         WHERE user_id=$1
+         ORDER BY added_at DESC`,
+        [visitor.id]
+      );
+
+      return send(res, 200, { data: result.rows });
     }
 
     if (pathname === '/api/progress' && req.method === 'GET') {
@@ -2141,6 +2224,61 @@ async function route(req, res) {
       });
     }
 
+    if (
+      pathname === '/api/discovery-saves' &&
+      (req.method === 'POST' || req.method === 'DELETE')
+    ) {
+      const input = await bodyOf(req);
+      const saved = safeDiscoverySave(input.item);
+
+      if (!saved) {
+        return send(res, 400, {
+          error: 'This discovery is missing a supported type or title.'
+        });
+      }
+
+      if (req.method === 'POST') {
+        const count = await pool.query(
+          'SELECT COUNT(*)::int AS n FROM saved_discoveries WHERE user_id=$1',
+          [user.id]
+        );
+        const exists = await pool.query(
+          'SELECT 1 FROM saved_discoveries WHERE user_id=$1 AND discovery_id=$2',
+          [user.id, saved.discoveryId]
+        );
+
+        if (!exists.rowCount && count.rows[0].n >= 500) {
+          return send(res, 409, {
+            error: 'Your web discoveries shelf is full. Remove an item before saving another.'
+          });
+        }
+
+        await pool.query(
+          `INSERT INTO saved_discoveries(user_id, discovery_id, payload)
+           VALUES($1, $2, $3::jsonb)
+           ON CONFLICT(user_id, discovery_id)
+           DO UPDATE SET payload=EXCLUDED.payload`,
+          [user.id, saved.discoveryId, JSON.stringify(saved.payload)]
+        );
+      } else {
+        await pool.query(
+          'DELETE FROM saved_discoveries WHERE user_id=$1 AND discovery_id=$2',
+          [user.id, saved.discoveryId]
+        );
+      }
+
+      const result = await pool.query(
+        `SELECT discovery_id AS "discoveryId", payload,
+                added_at AS "addedAt"
+         FROM saved_discoveries
+         WHERE user_id=$1
+         ORDER BY added_at DESC`,
+        [user.id]
+      );
+
+      return send(res, 200, { data: result.rows });
+    }
+
     // Account deletion
     if (pathname === '/api/account' && req.method === 'DELETE') {
       const input = await bodyOf(req);
@@ -2212,7 +2350,7 @@ async function route(req, res) {
 
     // Backup export
     if (pathname === '/api/backup' && req.method === 'GET') {
-      const [shelf, progress] = await Promise.all([
+      const [shelf, progress, discoveries] = await Promise.all([
         pool.query(
           `SELECT
             item_type AS "itemType",
@@ -2234,6 +2372,15 @@ async function route(req, res) {
            WHERE user_id=$1
            ORDER BY updated_at DESC`,
           [user.id]
+        ),
+
+        pool.query(
+          `SELECT discovery_id AS "discoveryId", payload,
+                  added_at AS "addedAt"
+           FROM saved_discoveries
+           WHERE user_id=$1
+           ORDER BY added_at DESC`,
+          [user.id]
         )
       ]);
 
@@ -2246,7 +2393,8 @@ async function route(req, res) {
           name: user.name
         },
         shelf: shelf.rows,
-        progress: progress.rows
+        progress: progress.rows,
+        discoveries: discoveries.rows
       });
     }
 
@@ -2341,6 +2489,24 @@ async function route(req, res) {
         }
       }
 
+      for (
+        const item of
+        (Array.isArray(input.discoveries) ? input.discoveries : []).slice(0, 500)
+      ) {
+        const saved = safeDiscoverySave(item.payload);
+        if (!saved) continue;
+
+        await pool.query(
+          `INSERT INTO saved_discoveries(
+            user_id, discovery_id, payload, added_at
+          )
+          VALUES($1, $2, $3::jsonb, COALESCE($4, NOW()))
+          ON CONFLICT(user_id, discovery_id)
+          DO UPDATE SET payload=EXCLUDED.payload`,
+          [user.id, saved.discoveryId, JSON.stringify(saved.payload), item.addedAt || null]
+        );
+      }
+
       const counts = await Promise.all([
         pool.query(
           'SELECT COUNT(*)::int n FROM shelves WHERE user_id=$1',
@@ -2349,13 +2515,18 @@ async function route(req, res) {
         pool.query(
           'SELECT COUNT(*)::int n FROM reading_progress WHERE user_id=$1',
           [user.id]
+        ),
+        pool.query(
+          'SELECT COUNT(*)::int n FROM saved_discoveries WHERE user_id=$1',
+          [user.id]
         )
       ]);
 
       return send(res, 200, {
         ok: true,
         shelfCount: counts[0].rows[0].n,
-        progressCount: counts[1].rows[0].n
+        progressCount: counts[1].rows[0].n,
+        discoveryCount: counts[2].rows[0].n
       });
     }
 

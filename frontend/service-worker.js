@@ -1,4 +1,4 @@
-const VERSION = 'panelverse-shell-v16';
+const VERSION = 'panelverse-shell-v18';
 
 const APP_SHELL = [
   '/',

@@ -5,8 +5,8 @@ This upgrade keeps the existing vanilla-JS frontend and Node HTTP server. It rep
 ## What changes
 
 - PostgreSQL tables: `users`, `catalog`, `shelves`, and `reading_progress`.
-- Catalog data is copied from the existing `data/db.json` the first time the server initializes the database. Existing catalog rows are not overwritten on later starts.
-- The first account created imports the legacy `local` shelf and reading progress when those records exist in `data/db.json`.
+- Catalog data is copied from `backend/data/db.json` the first time the server initializes the database. Existing catalog rows are not overwritten on later starts.
+- The first account created imports the legacy `local` shelf and reading progress when those records exist in `backend/data/db.json`.
 - Passwords are hashed with bcrypt; sessions are signed, HttpOnly cookies.
 - Shelf and reading-progress endpoints derive the owner from the authenticated session. Browser-supplied `owner` values are ignored.
 - The old local reader-profile selector now represents the signed-in account. Multiple local profiles are replaced by individual accounts.
@@ -15,7 +15,7 @@ This upgrade keeps the existing vanilla-JS frontend and Node HTTP server. It rep
 ## Local setup (Windows PowerShell)
 
 1. Back up your existing project folder.
-2. Extract this upgrade archive into `D:\Documents\panelverse`, allowing the included files to replace their counterparts. Do not delete `data\db.json`.
+2. Extract this upgrade archive into `D:\Documents\panelverse`, allowing the included files to replace their counterparts. Do not delete `backend\data\db.json`.
 3. Keep your existing `.env` file. It must contain:
 
    ```env

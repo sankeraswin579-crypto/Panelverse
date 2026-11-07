@@ -1,4 +1,4 @@
-const state={characters:[],comics:[],paths:[],adaptations:[],movies:[],storylines:[],shelf:[],query:'',universe:'All',format:'All formats',comicUniverse:'All',shelfMode:'all'};
+const state={characters:[],comics:[],paths:[],adaptations:[],movies:[],storylines:[],shelf:[],discoveries:[],query:'',universe:'All',format:'All formats',comicUniverse:'All',shelfMode:'all'};
 let currentOwner='local';
 
 const $=s=>document.querySelector(s);
@@ -170,6 +170,7 @@ function showPage(id){
 
   $('#breadcrumb-current').textContent=({
     overview:'Overview',
+    dashboard:'Reading insights',
     characters:'Characters',
     comics:'Comics library',
     paths:'Reading paths',
@@ -276,12 +277,13 @@ function openGuide(){
 
 async function init(){
   try{
-    const [a,b,c,d,e]=await Promise.all([
+    const [a,b,c,d,e,f]=await Promise.all([
       api('/api/characters'),
       api('/api/comics'),
       api('/api/reading-paths'),
       api('/api/adaptations'),
-      api('/api/shelf?owner='+encodeURIComponent(currentOwner))
+      api('/api/shelf?owner='+encodeURIComponent(currentOwner)),
+      api('/api/discovery-saves')
     ]);
 
     state.characters=a.data;
@@ -289,6 +291,7 @@ async function init(){
     state.paths=c.data;
     state.adaptations=d.data;
     state.shelf=e.data;
+    state.discoveries=f.data;
 
     $('#character-count').textContent=state.characters.length;
     $('#stat-characters').textContent=state.characters.length;
@@ -584,6 +587,60 @@ if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname
 
 state.progress=[];
 
+const WEEKLY_GOAL_KEY='panelverse-weekly-goal';
+
+function renderReadingInsights(){
+  if(!$('#page-dashboard'))return;
+  const records=state.progress||[];
+  const completed=records.filter(item=>item.status==='completed');
+  const active=records.filter(item=>item.status==='reading');
+  const goalSelect=$('#weekly-goal');
+  const savedGoal=Number(localStorage.getItem(WEEKLY_GOAL_KEY));
+  const goal=[1,2,3,5,7,10].includes(savedGoal)?savedGoal:3;
+  if(goalSelect&&goalSelect.value!==String(goal))goalSelect.value=String(goal);
+
+  const today=new Date();
+  const midnight=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  const monday=new Date(midnight);
+  monday.setDate(midnight.getDate()-(midnight.getDay()+6)%7);
+  const itemDate=item=>new Date(item.updatedAt||item.createdAt||item.completedAt||0);
+  const weekCount=completed.filter(item=>{const date=itemDate(item);return !Number.isNaN(date.getTime())&&date>=monday&&date<new Date(monday.getTime()+7*86400000)}).length;
+
+  $('#insight-completed').textContent=completed.length;
+  $('#insight-reading').textContent=active.length;
+  $('#insight-saved').textContent=state.shelf.length;
+  $('#insight-completion-rate').textContent=`${records.length?Math.round(completed.length/records.length*100):0}% of your tracker`;
+  const average=active.length?Math.round(active.reduce((sum,item)=>sum+(Number(item.progress)||0),0)/active.length):0;
+  $('#insight-pages').textContent=`${average}% average progress`;
+  const universes=new Set(state.shelf.map(item=>item.universe).filter(Boolean));
+  $('#insight-universes').textContent=universes.size?`${universes.size} ${universes.size===1?'universe':'universes'} explored`:'Explore your collection';
+  $('#goal-target').textContent=`/ ${goal} ${goal===1?'comic':'comics'}`;
+  $('#goal-complete').textContent=weekCount;
+  $('#goal-bar').style.width=`${Math.min(100,weekCount/goal*100)}%`;
+  const bar=$('.goal-track');
+  bar.setAttribute('aria-valuemax',String(goal));
+  bar.setAttribute('aria-valuenow',String(Math.min(goal,weekCount)));
+  $('#goal-caption').textContent=weekCount>=goal?'Weekly goal complete — great work!':weekCount?`${goal-weekCount} ${goal-weekCount===1?'more comic':'more comics'} to reach this week’s goal.`:'Finish a comic this week to start your streak.';
+
+  const todayIndex=(midnight.getDay()+6)%7;
+  $('#reading-week-chart').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((label,index)=>{
+    const date=new Date(monday);date.setDate(monday.getDate()+index);
+    const count=completed.filter(item=>{const d=itemDate(item);return !Number.isNaN(d.getTime())&&d.getFullYear()===date.getFullYear()&&d.getMonth()===date.getMonth()&&d.getDate()===date.getDate()}).length;
+    const height=count?Math.min(100,Math.max(12,count*27)):5;
+    return `<div class="reading-day${index===todayIndex?' is-today':''}" aria-label="${label}: ${count} ${count===1?'comic':'comics'}"><span class="reading-day-count">${count||''}</span><div class="reading-day-track"><span style="height:${height}%"></span></div><small>${label}</small></div>`;
+  }).join('');
+
+  const next=$('#insight-next');
+  const item=active[0]||records.find(entry=>entry.status==='want-to-read');
+  const comic=item&&state.comics.find(entry=>entry.id===item.comicId);
+  next.innerHTML=comic?`<div class="next-read-card"><span class="next-read-icon">▤</span><div><small>${item.status==='reading'?'PICK UP WHERE YOU LEFT OFF':'UP NEXT'}</small><strong>${esc(comic.title)}</strong><span>${item.status==='reading'?`${Number(item.progress)||0}% complete · `:''}${esc(comic.universe||'Comic library')}</span></div></div><button class="button secondary" data-go="shelf">Continue your reading →</button>`:'<div class="insight-empty"><span>✧</span><strong>Your next great story is waiting</strong><p>Track a comic from the library and it will appear here.</p><button class="text-button" data-go="comics">Browse comics →</button></div>';
+}
+
+$('#weekly-goal')?.addEventListener('change',event=>{
+  localStorage.setItem(WEEKLY_GOAL_KEY,String(event.target.value));
+  renderReadingInsights();
+});
+
 function progressRecord(id){
   return state.progress.find(x=>x.comicId===id);
 }
@@ -652,6 +709,7 @@ async function refreshProgress(){
   const r=await api('/api/progress?owner='+encodeURIComponent(currentOwner));
   state.progress=r.data;
   renderTracker();
+  renderReadingInsights();
 }
 
 async function saveProgress(comicId,status,progress){
@@ -662,6 +720,7 @@ async function saveProgress(comicId,status,progress){
 
   state.progress=r.data;
   renderAll();
+  renderReadingInsights();
 }
 
 const previousComicCard=comicCard;
@@ -1046,6 +1105,7 @@ const oldPage=showPage;
 
 showPage=function(id){
   oldPage(id);
+  if(id==='dashboard')renderReadingInsights();
 
   if(id==='screen')renderScreen();
   if(id==='storylines')renderStorylines();
@@ -1522,6 +1582,7 @@ async function switchReaderProfile(id){
     state.progress=p.data;
 
     renderAll();
+    renderReadingInsights();
     toast('Reader profile switched');
   }catch(error){
     toast(error.message);
@@ -1708,7 +1769,9 @@ if(tmdbForm){
       const response=await api('/api/discover/tmdb?q='+encodeURIComponent(query));
 
       if(!response.configured){
-        status.textContent='Live movie search is ready to configure. Add TMDB_API_KEY or TMDB_READ_ACCESS_TOKEN to the server environment.';
+        status.textContent=response.authRejected
+          ? 'TMDB rejected the server credentials. Update TMDB_API_KEY or TMDB_READ_ACCESS_TOKEN in the deployed server environment; other artwork sources will continue to work.'
+          : 'Live movie search is ready to configure. Add TMDB_API_KEY or TMDB_READ_ACCESS_TOKEN to the server environment.';
         return;
       }
 
@@ -1732,3 +1795,70 @@ if(tmdbForm){
     }
   });
 }
+
+function renderSavedDiscoveries(){
+  const container=$('#shelf-discoveries');
+  if(!container)return;
+
+  const rows=state.discoveries.filter(row=>
+    state.shelfMode==='all'||state.shelfMode==='discovery'
+  );
+  container.innerHTML=rows.map(row=>{
+    const item=row.payload||{};
+    const links=(Array.isArray(item.sourceLinks)?item.sourceLinks:[])
+      .filter(link=>typeof link.url==='string'&&link.url.startsWith('https://'))
+      .map(link=>`<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(link.label||'Open source')} ↗</a>`)
+      .join('');
+    const image=typeof item.imageUrl==='string'&&item.imageUrl.startsWith('https://')
+      ?`<img src="${esc(item.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:'';
+    return `<article class="saved-discovery-card"><div class="saved-discovery-art">${image}<span>${esc(item.type||'discovery')}</span></div><div class="saved-discovery-copy"><small>${esc(item.source||'Public source')}</small><h3>${esc(item.title||'Saved discovery')}</h3><p>${esc(item.summary||'Open the original source for more information.')}</p><div class="discovery-links">${links}</div><button class="save-inline" data-remove-discovery="${esc(row.discoveryId)}">Remove from shelf</button></div></article>`;
+  }).join('');
+}
+
+const renderShelfBeforeWebDiscoveries=renderShelf;
+renderShelf=function(){
+  renderShelfBeforeWebDiscoveries();
+  renderSavedDiscoveries();
+
+  if(state.shelfMode==='discovery'){
+    $('#shelf-universe-items').innerHTML='';
+    $('#shelf-screen').innerHTML='';
+    $('#shelf-characters').innerHTML='';
+    $('#shelf-comics').innerHTML='';
+  }
+
+  const visible=state.shelfMode==='discovery'
+    ?state.discoveries.length
+    :state.shelfMode==='all'
+      ?state.shelf.length+state.discoveries.length
+      :state.shelf.filter(row=>row.itemType===state.shelfMode).length;
+  $('#shelf-empty').hidden=visible>0;
+  if(state.shelfMode==='discovery'){
+    $('#shelf-empty h3').textContent='No web discoveries saved yet';
+    $('#shelf-empty p').textContent='Search public sources and save useful results here.';
+  }else{
+    $('#shelf-empty h3').textContent='Your shelf is ready';
+    $('#shelf-empty p').textContent='Save something to your shelf to see it here.';
+  }
+};
+
+document.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-remove-discovery]');
+  if(!button)return;
+
+  const row=state.discoveries.find(item=>item.discoveryId===button.dataset.removeDiscovery);
+  if(!row)return;
+  button.disabled=true;
+  try{
+    state.discoveries=(await api('/api/discovery-saves',{
+      method:'DELETE',
+      body:JSON.stringify({item:row.payload})
+    })).data;
+    renderAll();
+    window.dispatchEvent(new Event('panelverse:discoveries-updated'));
+    toast('Removed web discovery from your shelf');
+  }catch(error){
+    button.disabled=false;
+    toast(error.message);
+  }
+});

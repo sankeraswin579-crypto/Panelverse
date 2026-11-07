@@ -1,12 +1,16 @@
 {
   "name": "panelverse",
-  "version": "3.1.0",
+  "version": "1.4.0",
   "private": true,
   "description": "PanelVerse superhero and comic universe explorer with revocable PostgreSQL sessions",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check public/discovery.js && node --check public/login.js"
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "check": "node --check backend/server.js && node --check backend/tmdb-auth.js && node --check frontend/app.js && node --check frontend/discovery.js && node --check frontend/login.js && node --check backend/test/tmdb-auth.test.js",
+    "android:debug": "node scripts/run-gradle.js :app:assembleDebug",
+    "android:bundle": "node scripts/run-gradle.js :app:bundlePlayRelease",
+    "android:preflight": "node scripts/android-preflight.js",
+    "android:assetlinks": "node scripts/write-assetlinks.js"
   },
   "engines": {
     "node": ">=20"

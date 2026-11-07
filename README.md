@@ -29,8 +29,10 @@ See [UPGRADE-3.1.0.md](UPGRADE-3.1.0.md) for deployment and migration notes.
 ### 📚 Comic Discovery
 - Curated superhero comics catalogue.
 - Search and filter comics by universe.
-- Live comic discovery using Wikipedia and Wikidata.
-- External source links for discovered content.
+- Cross-source discovery across the PanelVerse catalogue, Wikipedia, Wikidata, TMDB (when configured), and Open Library.
+- Save public discoveries to a persistent, account-linked web discoveries shelf.
+- Keep source links and provider attribution with saved results.
+- Export and restore saved web discoveries with the rest of the reader backup.
 - Character and comic discovery filters.
 
 ### 🦸 Character Universe
@@ -60,6 +62,7 @@ See [UPGRADE-3.1.0.md](UPGRADE-3.1.0.md) for deployment and migration notes.
 - Release years, genres, and continuity.
 - Character and comic connections.
 - Personal watchlist support.
+- TMDB artwork lookup is optional; configure a valid `TMDB_API_KEY` or `TMDB_READ_ACCESS_TOKEN` in the server environment. If TMDB rejects credentials, PanelVerse disables it for that server run and keeps alternate artwork providers available.
 
 ### 👤 Reader Accounts
 - Account registration and authentication.
@@ -73,6 +76,8 @@ See [UPGRADE-3.1.0.md](UPGRADE-3.1.0.md) for deployment and migration notes.
 Search public comic and superhero references using:
 - Wikipedia
 - Wikidata
+- Open Library
+- TMDB, when configured by the deployment
 
 Features:
 - Combines local catalogue and public results.
@@ -82,6 +87,8 @@ Features:
 - Maximum two upstream requests per cache miss.
 - Descriptive User-Agent.
 - External source links.
+- Save result snapshots to a cross-device account shelf.
+- Export and import discovery snapshots with source links.
 
 ### 📱 Progressive Web App
 - Responsive desktop and mobile interface.
@@ -101,11 +108,30 @@ Features:
 | Database | Neon PostgreSQL |
 | API | REST API |
 | Authentication | bcrypt, PostgreSQL-backed sessions, HttpOnly Cookies |
-| External Discovery | Wikipedia, Wikidata |
+| External Discovery | Wikipedia, Wikidata, Open Library, optional TMDB |
 | Application Type | Progressive Web App |
 | Deployment | Render |
 | Database Hosting | Neon PostgreSQL |
 | Version Control | Git & GitHub |
+
+## 📁 Project Structure
+
+```text
+Panelverse/
+├── frontend/              # Browser UI, styles, PWA files, artwork and .well-known
+├── backend/
+│   ├── server.js           # HTTP server and REST API
+│   ├── tmdb-auth.js        # TMDB credential fallback helper
+│   ├── data/               # Starter catalogue and artwork manifest
+│   └── test/               # Backend tests
+├── panelverse-android/    # Android Trusted Web Activity project
+├── archive/               # Previous frontend copies, patch tools and backups
+├── package.json           # Root commands used by local development and Render
+├── .env.example           # Local server configuration template
+└── README.md
+```
+
+The backend serves the frontend from the same origin, so cookies and API calls continue to work without separate CORS configuration.
 
 ---
 
@@ -218,7 +244,7 @@ The server initializes its PostgreSQL tables and seeds missing catalogue collect
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/discover/comics` | Public comic discovery |
+| GET | `/api/discover/comics` | Search the catalogue and available public discovery providers |
 | GET | `/api/characters` | Character directory |
 | GET | `/api/comics` | Comic catalogue |
 | GET | `/api/reading-paths` | Reading sequences |
@@ -236,6 +262,9 @@ The server initializes its PostgreSQL tables and seeds missing catalogue collect
 | GET | `/api/shelf` | Retrieve saved entries |
 | POST | `/api/shelf` | Save an entry |
 | DELETE | `/api/shelf` | Remove a saved entry |
+| GET | `/api/discovery-saves` | Retrieve saved web discoveries |
+| POST | `/api/discovery-saves` | Save a web discovery to the account |
+| DELETE | `/api/discovery-saves` | Remove a saved web discovery |
 | GET | `/api/progress` | Retrieve reading progress |
 | POST | `/api/progress` | Create or update progress |
 | DELETE | `/api/progress` | Remove reading progress |
@@ -266,7 +295,7 @@ Supported discovery types:
 - `characters`
 - `comics`
 
-External source availability and results depend on Wikipedia and Wikidata services.
+External source availability and results depend on the providers that are reachable and configured for the deployment. Search results are snapshots; open the attributed provider links for current information. Saving requires a PanelVerse account.
 
 ---
 
@@ -301,7 +330,7 @@ The existing PanelVerse Guide is also a curated scripted demo, not a hosted gene
 
 ## 📦 Account Backup and Portability
 
-PanelVerse supports versioned JSON backups containing saved entries and reading progress.
+PanelVerse supports versioned JSON backups containing saved catalogue entries, public web discoveries, and reading progress.
 
 Features:
 - Export personal data.
@@ -309,6 +338,7 @@ Features:
 - Merge supported entries.
 - Restore saved shelf information.
 - Restore reading progress.
+- Restore web discovery snapshots and their original source links.
 
 ---
 

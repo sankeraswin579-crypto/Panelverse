@@ -33,6 +33,7 @@ This project is a same-origin Node.js application backed by Neon PostgreSQL. The
    - `NODE_ENV` = `production`
    - `DATABASE_URL` = the Neon connection string
    - `SESSION_SECRET` = a unique random value of at least 32 characters
+   - Optional: `TMDB_API_KEY` or `TMDB_READ_ACCESS_TOKEN` for TMDB movie/TV search and artwork. If Render logs `TMDB search failed (401)` or reports rejected credentials, replace the expired/invalid value in Render's Environment page and redeploy. If both are set, PanelVerse tries the read token first, then falls back to the API key.
 5. Deploy the latest commit.
 
 If using Render Blueprint instead, review `render.yaml` before applying it. Set `DATABASE_URL` manually in the Render dashboard. The Blueprint generates a `SESSION_SECRET` value.
